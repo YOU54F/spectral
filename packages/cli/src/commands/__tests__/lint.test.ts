@@ -292,4 +292,24 @@ describe('lint', () => {
     expect(writeOutput).toHaveBeenCalledWith('<formatted output>', 'ga.txt');
     expect(writeOutput).toHaveBeenCalledWith('<formatted output>', 'cc.json');
   });
+
+  it('does not write informational message to stdout when format is json and no results found', async () => {
+    (lint as jest.Mock).mockReset();
+    (lint as jest.Mock).mockResolvedValueOnce({ results: [], resolvedRuleset: {} });
+    (formatOutput as jest.Mock).mockReturnValueOnce('[]');
+    (writeOutput as jest.Mock).mockResolvedValueOnce(undefined);
+
+    await run(`lint -f json ./__fixtures__/empty-oas2-document.json`);
+    expect(process.stdout.write).not.toHaveBeenCalledWith(expect.stringContaining('No results'));
+  });
+
+  it('writes informational message to stdout when format is stylish and no results found', async () => {
+    (lint as jest.Mock).mockReset();
+    (lint as jest.Mock).mockResolvedValueOnce({ results: [], resolvedRuleset: {} });
+    (formatOutput as jest.Mock).mockReturnValueOnce('');
+    (writeOutput as jest.Mock).mockResolvedValueOnce(undefined);
+
+    await run(`lint -f stylish ./__fixtures__/empty-oas2-document.json`);
+    expect(process.stdout.write).toHaveBeenCalledWith(expect.stringContaining('No results'));
+  });
 });
