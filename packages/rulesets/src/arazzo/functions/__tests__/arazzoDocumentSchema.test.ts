@@ -281,4 +281,56 @@ describe('arazzoDocumentSchema', () => {
       'property must be equal to one of the allowed values: "goto". Did you mean "goto"?',
     );
   });
+
+  describe('parameter "in" location (#2745)', () => {
+    const errorPaths = (results: unknown): string[] =>
+      (results as Array<{ path: Array<string | number> }>).map(r => r.path.join('.'));
+
+    const buildDocument = (step: Record<string, unknown>, componentsParameters?: Record<string, unknown>) => ({
+      arazzo: '1.0.0',
+      info: { title: 'Arazzo', version: '1.0.0' },
+      sourceDescriptions: [{ name: 'source1', url: 'https://example.com', type: 'openapi' }],
+      workflows: [
+        {
+          workflowId: 'workflow1',
+          steps: [{ stepId: 'step1', ...step }],
+        },
+      ],
+      ...(componentsParameters !== void 0 ? { components: { parameters: componentsParameters } } : {}),
+    });
+
+    test.each(['path', 'query', 'header', 'cookie'])('should pass for a step parameter with in: %s', location => {
+      const results = runSchema(
+        buildDocument({ operationId: 'operation1', parameters: [{ name: 'p', in: location, value: 'v' }] }),
+      );
+      expect(results).toHaveLength(0);
+    });
+
+    test('should fail for a step parameter with in: body (operationId)', () => {
+      const results = runSchema(
+        buildDocument({ operationId: 'operation1', parameters: [{ name: 'p', in: 'body', value: 'v' }] }),
+      );
+      expect(results.length).toBeGreaterThan(0);
+      expect(errorPaths(results).some(p => p.startsWith('workflows.0.steps.0.parameters.0'))).toBe(true);
+    });
+
+    test('should fail for a step parameter with in: body (operationPath)', () => {
+      const results = runSchema(
+        buildDocument({
+          operationPath: '{$sourceDescriptions.source1.url}#/paths/~1pets/get',
+          parameters: [{ name: 'p', in: 'body', value: 'v' }],
+        }),
+      );
+      expect(results.length).toBeGreaterThan(0);
+      expect(errorPaths(results).some(p => p.startsWith('workflows.0.steps.0.parameters.0'))).toBe(true);
+    });
+
+    test('should fail for a component parameter with in: body', () => {
+      const results = runSchema(
+        buildDocument({ operationId: 'operation1' }, { bodyParam: { name: 'p', in: 'body', value: 'v' } }),
+      );
+      expect(results.length).toBeGreaterThan(0);
+      expect(errorPaths(results).some(p => p.startsWith('components.parameters.bodyParam'))).toBe(true);
+    });
+  });
 });
