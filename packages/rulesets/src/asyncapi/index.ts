@@ -11,14 +11,7 @@ import {
   aas3_0,
   aas3_1,
 } from '@stoplight/spectral-formats';
-import {
-  truthy,
-  pattern,
-  unreferencedReusableObject,
-  schema,
-  undefined, // eslint-disable-line no-shadow-restricted-names
-  alphabetical,
-} from '@stoplight/spectral-functions';
+import { truthy, pattern, unreferencedReusableObject, schema, alphabetical } from '@stoplight/spectral-functions';
 
 import asyncApiChannelParameters from './functions/asyncApiChannelParameters';
 import asyncApi2ChannelServers from './functions/asyncApi2ChannelServers';
@@ -28,6 +21,7 @@ import asyncApi2MessageIdUniqueness from './functions/asyncApi2MessageIdUniquene
 import asyncApi2OperationIdUniqueness from './functions/asyncApi2OperationIdUniqueness';
 import asyncApiSchemaValidation from './functions/asyncApiSchemaValidation';
 import asyncApiPayloadValidation from './functions/asyncApiPayloadValidation';
+import asyncApiAvroPayloadValidation, { AVRO_SCHEMA_FORMAT } from './functions/asyncApiAvroPayloadValidation';
 import serverVariables from '../shared/functions/serverVariables';
 import { uniquenessTags } from '../shared/functions';
 import asyncApiSecurity from './functions/asyncApiSecurity';
@@ -435,25 +429,61 @@ export default {
       },
     },
     'asyncapi-payload-unsupported-schemaFormat': {
-      description: 'Message schema validation is only supported with default unspecified "schemaFormat".',
+      description: 'Message schema validation is only supported with default unspecified "schemaFormat" or Avro.',
+      message: 'Message schema validation is only supported with default unspecified "schemaFormat" or Avro.',
       severity: 'info',
       recommended: true,
       formats: [aas2],
       given: ['$.components.messageTraits.*', '$.components.messages.*', '$.channels[*][publish,subscribe].message'],
       then: {
         field: 'schemaFormat',
-        function: undefined,
+        function: pattern,
+        functionOptions: {
+          match: AVRO_SCHEMA_FORMAT.source,
+        },
       },
     },
     'asyncapi-3-payload-unsupported-schemaFormat': {
-      description: 'Message schema validation is only supported with default unspecified "schemaFormat".',
+      description: 'Message schema validation is only supported with default unspecified "schemaFormat" or Avro.',
+      message: 'Message schema validation is only supported with default unspecified "schemaFormat" or Avro.',
       severity: 'info',
       recommended: true,
       formats: [aas3],
       given: ['$.components.messages.*.payload', '$.channels.*.messages.*.payload'],
       then: {
         field: 'schemaFormat',
-        function: undefined,
+        function: pattern,
+        functionOptions: {
+          match: AVRO_SCHEMA_FORMAT.source,
+        },
+      },
+    },
+    'asyncapi-payload-avro': {
+      description: 'Avro payloads must be valid Avro schemas.',
+      message: '{{error}}',
+      severity: 'error',
+      recommended: true,
+      formats: [aas2],
+      given: ['$.components.messageTraits.*', '$.components.messages.*', '$.channels[*][publish,subscribe].message'],
+      then: {
+        function: asyncApiAvroPayloadValidation,
+        functionOptions: {
+          schemaField: 'payload',
+        },
+      },
+    },
+    'asyncapi-3-payload-avro': {
+      description: 'Avro payloads must be valid Avro schemas.',
+      message: '{{error}}',
+      severity: 'error',
+      recommended: true,
+      formats: [aas3],
+      given: ['$.components.messages.*.payload', '$.channels.*.messages.*.payload'],
+      then: {
+        function: asyncApiAvroPayloadValidation,
+        functionOptions: {
+          schemaField: 'schema',
+        },
       },
     },
     'asyncapi-payload': {
