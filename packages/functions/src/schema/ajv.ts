@@ -275,8 +275,8 @@ export function createAjvInstancesWithNestedCache(): AssignAjvInstance {
   const base = createAjvInstances();
   const wrapped = new WeakMap<ValidateFunction, ValidateFunction>();
 
-  return function (schema, dialect, allErrors): ValidateFunction {
-    const rootVf = base(schema, dialect, allErrors);
+  return function (schema, dialect, validationOptions): ValidateFunction {
+    const rootVf = base(schema, dialect, validationOptions);
     return wrapped.get(rootVf) ?? wrapped.set(rootVf, attachNestedCache(rootVf, dialect)).get(rootVf)!;
   };
 }
