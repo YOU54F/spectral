@@ -333,4 +333,51 @@ describe('arazzoDocumentSchema', () => {
       expect(errorPaths(results).some(p => p.startsWith('components.parameters.bodyParam'))).toBe(true);
     });
   });
+
+  const docWithCriterion = (criterion: Record<string, unknown>) => ({
+    arazzo: '1.0.0',
+    info: { title: 'Criterion', version: '1.0.0' },
+    sourceDescriptions: [{ name: 'source1', url: 'https://example.com', type: 'arazzo' }],
+    workflows: [
+      {
+        workflowId: 'workflow1',
+        steps: [{ stepId: 'step1', operationId: 'operation1', successCriteria: [criterion] }],
+      },
+    ],
+  });
+
+  test.each([
+    [{ condition: '$statusCode == 200' }],
+    [{ condition: '$statusCode == 200', type: 'simple', context: '$response.body' }],
+    [{ condition: '^ok$', type: 'regex', context: '$response.body' }],
+    [{ condition: '$.pets[0]', type: 'jsonpath', context: '$response.body' }],
+    [
+      {
+        condition: '$.pets[0]',
+        context: '$response.body',
+        type: { type: 'jsonpath', version: 'draft-goessner-dispatch-jsonpath-00' },
+      },
+    ],
+    [{ condition: '/pets', context: '$response.body', type: { type: 'xpath', version: 'xpath-30' } }],
+  ])('should pass for a valid Criterion Object %j', criterion => {
+    expect(runSchema(docWithCriterion(criterion))).toHaveLength(0);
+  });
+
+  test.each([
+    // version must be nested in a Criterion Expression Type Object
+    [
+      {
+        condition: '$.pets',
+        context: '$response.body',
+        type: 'jsonpath',
+        version: 'draft-goessner-dispatch-jsonpath-00',
+      },
+    ],
+    [{ condition: '$.pets', context: '$response.body', type: 'unknown' }],
+    [{ condition: '$.pets', context: '$response.body', type: { type: 'jsonpath', version: 'xpath-30' } }],
+    [{ condition: '$.pets', context: '$response.body', type: { type: 'regex', version: '1' } }],
+    [{ condition: '$.pets', context: '$response.body', type: { type: 'jsonpath' } }],
+  ])('should fail for an invalid Criterion Object %j', criterion => {
+    expect(runSchema(docWithCriterion(criterion)).length).toBeGreaterThan(0);
+  });
 });
