@@ -119,9 +119,11 @@ params:
 
 **Recommended:** Yes
 
-### openrpc-ref-target
+### openrpc-ref-component-type
 
-Every local `$ref` must resolve, and it must point to the matching `#/components` section. For example, a param must reference `#/components/contentDescriptors/...`, an error must reference `#/components/errors/...`, and an example pairing must reference `#/components/examplePairings/...`.
+Every local `$ref` that resolves must point to an entry of the matching `#/components` section. For example, a param must reference `#/components/contentDescriptors/...`, an error must reference `#/components/errors/...`, and an example pairing must reference `#/components/examplePairings/...`.
+
+A `$ref` that doesn't resolve is reported once, by Spectral's core `invalid-ref` diagnostic, and this rule ignores it.
 
 **Recommended:** Yes
 
@@ -132,6 +134,10 @@ methods:
   - name: get_pet
     params:
       - $ref: "#/components/schemas/PetId"
+components:
+  schemas:
+    PetId:
+      type: integer
 ```
 
 ### openrpc-error-code-unique

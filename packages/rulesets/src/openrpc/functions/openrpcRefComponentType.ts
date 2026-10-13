@@ -10,8 +10,8 @@ type Section = 'contentDescriptors' | 'errors' | 'tags' | 'links' | 'examplePair
 type RefSite = {
   path: JsonPath;
   ref: unknown;
-  // components section the reference must point at, null when any (local) target is fine
-  section: Section | null;
+  // components section the reference must point at
+  section: Section;
 };
 
 function getRef(value: unknown): unknown {
@@ -44,13 +44,8 @@ function collectRefSites(document: Record<string, unknown>): RefSite[] {
   if (Array.isArray(document.methods)) {
     document.methods.forEach((method, i) => {
       const methodPath = ['methods', i];
-      const ref = getRef(method);
-      if (ref !== void 0) {
-        sites.push({ path: [...methodPath, '$ref'], ref, section: null });
-        return;
-      }
-
-      if (!isObject(method)) return;
+      // a method may reference anything; only its resolvability matters, which core invalid-ref checks
+      if (!isObject(method) || getRef(method) !== void 0) return;
 
       for (const [key, section] of METHOD_ARRAYS) {
         const items = method[key];
@@ -106,6 +101,11 @@ function resolveLocal(document: unknown, ref: string): boolean {
   return true;
 }
 
+function pointsAtEntry(ref: string, section: Section): boolean {
+  const prefix = `#/components/${section}/`;
+  return ref.startsWith(prefix) && ref.length > prefix.length && !ref.includes('/', prefix.length);
+}
+
 export default createRulesetFunction<Record<string, unknown>, null>(
   {
     input: {
@@ -113,27 +113,17 @@ export default createRulesetFunction<Record<string, unknown>, null>(
     },
     options: null,
   },
-  function openrpcRefTarget(targetVal) {
+  function openrpcRefComponentType(targetVal) {
     const results: IFunctionResult[] = [];
 
     for (const { path, ref, section } of collectRefSites(targetVal)) {
-      // external references are resolved (and reported, if broken) by the ref resolver
-      if (typeof ref !== 'string' || !ref.startsWith('#')) continue;
+      // External references are handled by the ref resolver, and local references that do not resolve
+      // are reported by core "invalid-ref"; only a resolvable reference to the wrong kind of component is ours.
+      if (typeof ref !== 'string' || !ref.startsWith('#') || !resolveLocal(targetVal, ref)) continue;
 
-      if (section !== null) {
-        const prefix = `#/components/${section}/`;
-        if (!ref.startsWith(prefix) || ref.length === prefix.length || ref.indexOf('/', prefix.length) !== -1) {
-          results.push({
-            message: `"$ref" must point to an entry of "#/components/${section}", got "${ref}".`,
-            path,
-          });
-          continue;
-        }
-      }
-
-      if (!resolveLocal(targetVal, ref)) {
+      if (!pointsAtEntry(ref, section)) {
         results.push({
-          message: `"$ref" target "${ref}" does not exist in the document.`,
+          message: `"$ref" must point to an entry of "#/components/${section}", got "${ref}".`,
           path,
         });
       }

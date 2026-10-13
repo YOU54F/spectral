@@ -4,7 +4,7 @@ import { enumeration, or, pattern, truthy } from '@stoplight/spectral-functions'
 import openrpcDocumentSchema from './functions/openrpcDocumentSchema';
 import openrpcUniqueNames from './functions/openrpcUniqueNames';
 import openrpcParamRequiredOrder from './functions/openrpcParamRequiredOrder';
-import openrpcRefTarget from './functions/openrpcRefTarget';
+import openrpcRefComponentType from './functions/openrpcRefComponentType';
 import openrpcErrorCodeUnique from './functions/openrpcErrorCodeUnique';
 import openrpcErrorCodeReserved from './functions/openrpcErrorCodeReserved';
 import openrpcExamplePairingParams from './functions/openrpcExamplePairingParams';
@@ -157,15 +157,15 @@ export default {
         },
       },
     },
-    'openrpc-ref-target': {
-      description: 'Local "$ref" must resolve and point to the matching "#/components" section.',
+    'openrpc-ref-component-type': {
+      description: 'Local "$ref" must point to an entry of the matching "#/components" section.',
       message: '{{error}}',
       severity: 'error',
       recommended: true,
       given: '$',
       resolved: false,
       then: {
-        function: openrpcRefTarget,
+        function: openrpcRefComponentType,
       },
     },
     'openrpc-error-code-unique': {

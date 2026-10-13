@@ -24,6 +24,21 @@ describe('spectral:openrpc ruleset', () => {
     expect(results.filter(r => r.code.toString().startsWith('openrpc-'))).toEqual([]);
   });
 
+  it('reports a dangling $ref exactly once, via core invalid-ref', async () => {
+    const s = createWithRules(ruleNames);
+    const document = createDocument();
+    document.methods[0].errors[0] = { $ref: '#/components/errors/Missing' };
+
+    const results = await s.run(JSON.stringify(document));
+
+    expect(results).toEqual([
+      expect.objectContaining({
+        code: 'invalid-ref',
+        path: ['methods', '0', 'errors', '0', '$ref'],
+      }),
+    ]);
+  });
+
   it('every rule is documented', () => {
     for (const rule of Object.values(openrpcRuleset.rules)) {
       expect(rule.description).toEqual(expect.any(String));

@@ -2,7 +2,7 @@ import { DiagnosticSeverity } from '@stoplight/types';
 import testRule from './__helpers__/tester';
 import { createDocument, modifyDocument } from './__helpers__/document';
 
-testRule('openrpc-ref-target', [
+testRule('openrpc-ref-component-type', [
   {
     name: 'all references point to the right components',
     document: createDocument(),
@@ -61,15 +61,25 @@ testRule('openrpc-ref-target', [
     ],
   },
   {
-    name: 'reference target does not exist',
+    name: 'reference pointing inside a component entry',
     document: modifyDocument(doc => {
-      doc.methods[0].errors[0] = { $ref: '#/components/errors/Missing' };
+      doc.methods[0].params[0] = { $ref: '#/components/contentDescriptors/limit/schema' };
     }),
     errors: [
       {
-        message: '"$ref" target "#/components/errors/Missing" does not exist in the document.',
-        path: ['methods', '0', 'errors', '0', '$ref'],
+        message:
+          '"$ref" must point to an entry of "#/components/contentDescriptors", got "#/components/contentDescriptors/limit/schema".',
+        path: ['methods', '0', 'params', '0', '$ref'],
       },
     ],
+  },
+  {
+    name: 'unresolvable references are left to core invalid-ref',
+    document: modifyDocument(doc => {
+      doc.methods[0].errors[0] = { $ref: '#/components/errors/Missing' };
+      doc.methods[0].params[0] = { $ref: '#/components/schemas/Missing' };
+      doc.methods[1] = { $ref: '#/components/methods/missing' };
+    }),
+    errors: [],
   },
 ]);
