@@ -1,8 +1,8 @@
 import { mcpServer } from '@stoplight/spectral-formats';
-import { enumeration, pattern } from '@stoplight/spectral-functions';
+import { defined, enumeration, pattern } from '@stoplight/spectral-functions';
 
 import mcpServerSchema from './functions/mcpServerSchema';
-import mcpSchemaVersion from './functions/mcpSchemaVersion';
+import mcpSchemaVersion, { CURRENT_SCHEMA_URL } from './functions/mcpSchemaVersion';
 import mcpServerName from './functions/mcpServerName';
 import mcpVersionNotRange from './functions/mcpVersionNotRange';
 import mcpPackageTransport from './functions/mcpPackageTransport';
@@ -41,6 +41,17 @@ export default {
       given: '$',
       then: {
         function: mcpServerSchema,
+      },
+    },
+    'mcp-server-schema-required': {
+      description: '"$schema" must be set; the MCP registry requires it.',
+      message: '"$schema" must be set to "' + CURRENT_SCHEMA_URL + '"; the MCP registry requires it.',
+      severity: 0,
+      recommended: true,
+      given: '$',
+      then: {
+        field: '$schema',
+        function: defined,
       },
     },
     'mcp-server-schema-version': {

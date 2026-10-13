@@ -8,16 +8,9 @@ testRule('mcp-server-schema-version', [
     errors: [],
   },
   {
-    name: 'missing $schema',
+    name: 'missing $schema is left to mcp-server-schema-required',
     document: server({ $schema: void 0 }),
-    errors: [
-      {
-        message:
-          '"$schema" must be set to "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json"; the MCP registry requires it.',
-        path: [],
-        severity: DiagnosticSeverity.Warning,
-      },
-    ],
+    errors: [],
   },
   {
     name: 'older schema',

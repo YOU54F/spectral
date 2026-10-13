@@ -12,9 +12,15 @@ Validate the structure of `server.json` against the official MCP server.json JSO
 
 **Recommended:** Yes
 
+### mcp-server-schema-required
+
+`$schema` must be set. The MCP registry rejects `server.json` files without it.
+
+**Recommended:** Yes
+
 ### mcp-server-schema-version
 
-`$schema` should be present and reference the current server.json schema (`https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json`).
+If `$schema` is set, it should reference the current server.json schema (`https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json`). An older or unrecognised schema date is a warning.
 
 **Recommended:** Yes
 
@@ -160,6 +166,14 @@ Environment variables, arguments, headers and URL variables whose names look lik
 {
   "environmentVariables": [{ "name": "API_KEY", "default": "sk-123456" }]
 }
+```
+
+This rule is a warning by default, because the name matching can flag inputs that are not secrets. To make it an error, override it in your own ruleset:
+
+```yaml
+extends: ["spectral:mcp"]
+rules:
+  mcp-secret-input: error
 ```
 
 ### mcp-repository-url

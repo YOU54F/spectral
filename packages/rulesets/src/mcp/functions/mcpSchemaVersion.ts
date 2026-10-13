@@ -12,15 +12,8 @@ export default createRulesetFunction<Record<string, unknown>, null>(
   function mcpSchemaVersion(server, _opts, { path: basePath }) {
     const { $schema } = server;
 
-    if ($schema === void 0) {
-      return [
-        {
-          message: `"$schema" must be set to "${CURRENT_SCHEMA_URL}"; the MCP registry requires it.`,
-        },
-      ];
-    }
-
-    if ($schema !== CURRENT_SCHEMA_URL) {
+    // A missing "$schema" is reported by mcp-server-schema-required.
+    if ($schema !== void 0 && $schema !== CURRENT_SCHEMA_URL) {
       return [
         {
           message: `"$schema" should reference the current server.json schema "${CURRENT_SCHEMA_URL}".`,
