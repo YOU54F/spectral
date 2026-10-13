@@ -231,4 +231,56 @@ testRule('array-items', [
       },
     ],
   },
+
+  {
+    name: 'array with prefixItems and no items is valid in oas3.1 document',
+    document: {
+      openapi: '3.1.0',
+      components: {
+        schemas: {
+          Tuple: {
+            type: 'array',
+            prefixItems: [{ type: 'string' }, { type: 'number' }],
+          },
+          NullableTuple: {
+            type: ['array', 'null'],
+            prefixItems: [{ type: 'string' }],
+          },
+          Nested: {
+            type: 'array',
+            items: {
+              type: 'array',
+              prefixItems: [{ type: 'string' }],
+              minItems: 1,
+              maxItems: 1,
+            },
+          },
+        },
+      },
+    },
+    errors: [],
+  },
+
+  {
+    name: 'array with prefixItems and no items is invalid in oas3.0 document',
+    document: {
+      openapi: '3.0.3',
+      components: {
+        schemas: {
+          Tuple: {
+            type: 'array',
+            prefixItems: [{ type: 'string' }],
+          },
+        },
+      },
+    },
+    errors: [
+      {
+        code: 'array-items',
+        message: 'Schemas with "type: array", require a sibling "items" field',
+        path: ['components', 'schemas', 'Tuple'],
+        severity: DiagnosticSeverity.Error,
+      },
+    ],
+  },
 ]);
