@@ -14,7 +14,7 @@ An Overlay document can't be fully validated on its own. Spectral lints the Over
 
 To check those, apply the overlay with an Overlay tool and lint the resulting document with the [OpenAPI ruleset](./openapi-rules.md).
 
-`$ref`s inside `update` values usually refer to the target document (for example `#/components/schemas/Pet`). Spectral always resolves references relative to the document being linted, so it reports `invalid-ref` errors for references that only exist in the target document. This is a known limitation; if it gets in your way, you can provide a [custom resolver](../guides/3-javascript.md#how-to-use-a-custom-resolver) (`--resolver` in the CLI). The Overlay rules themselves always look at the unresolved document.
+`$ref`s inside `update` values refer to the target document (for example `#/components/schemas/Pet`), so Spectral leaves them unresolved and doesn't report them as `invalid-ref`. Other `$ref`s, such as Overlay 1.2 references to `#/components/actions/...`, are resolved and checked as usual.
 
 ## Rules
 
