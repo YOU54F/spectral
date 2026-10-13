@@ -1,6 +1,6 @@
 import { createRulesetFunction } from '@stoplight/spectral-core';
 import type { IFunctionResult } from '@stoplight/spectral-core';
-import { arazzo1_0 } from '@stoplight/spectral-formats';
+import { arazzo1_0, arazzo1_1, arazzo1_2 } from '@stoplight/spectral-formats';
 import { isPlainObject, resolveInlineRef } from '@stoplight/json';
 import type { ErrorObject } from 'ajv';
 import leven from 'leven';
@@ -16,10 +16,16 @@ export default createRulesetFunction<unknown, null>(
     const formats = context.document.formats;
     if (formats === null || formats === void 0) return [];
 
-    const schema = formats.has(arazzo1_0) ? 'arazzo1_0' : null;
+    const schema = formats.has(arazzo1_2)
+      ? 'arazzo1_2'
+      : formats.has(arazzo1_1)
+        ? 'arazzo1_1'
+        : formats.has(arazzo1_0)
+          ? 'arazzo1_0'
+          : null;
     if (!schema) return;
 
-    const validator = validators.arazzo1_0;
+    const validator = validators[schema];
 
     if (typeof validator !== 'function') {
       throw new Error(`Validator for schema "${schema}" is not a function`);

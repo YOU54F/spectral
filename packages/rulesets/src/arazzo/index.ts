@@ -1,4 +1,4 @@
-import { arazzo1_0 } from '@stoplight/spectral-formats';
+import { arazzo1_0, arazzo1_1, arazzo1_2 } from '@stoplight/spectral-formats';
 import { truthy, falsy, pattern } from '@stoplight/spectral-functions';
 
 import arazzoDocumentSchema from './functions/arazzoDocumentSchema';
@@ -16,7 +16,7 @@ import arazzoStepValidation from './functions/arazzoStepValidation';
 
 export default {
   documentationUrl: 'https://meta.stoplight.io/docs/spectral/docs/reference/arazzo-rules.md',
-  formats: [arazzo1_0],
+  formats: [arazzo1_0, arazzo1_1, arazzo1_2],
   rules: {
     'arazzo-document-schema': {
       description: 'Arazzo Document must be valid against the Arazzo schema.',

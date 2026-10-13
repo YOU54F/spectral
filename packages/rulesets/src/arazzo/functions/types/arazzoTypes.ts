@@ -60,12 +60,20 @@ export type Step = {
   workflowId?: string;
   operationId?: string;
   operationPath?: string;
+  // Arazzo 1.1
+  channelPath?: string;
+  action?: 'send' | 'receive';
+  correlationId?: string;
+  timeout?: number;
+  dependsOn?: string[];
+  // Arazzo 1.2 (WSDL/SOAP)
+  operationName?: string;
 };
 
 export type SourceDescription = {
   name: string;
   url: string;
-  type?: 'arazzo' | 'openapi';
+  type?: 'arazzo' | 'openapi' | 'asyncapi' | 'wsdl';
 };
 
 export type Workflow = {
