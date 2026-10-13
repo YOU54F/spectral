@@ -23,7 +23,13 @@ function* _applyUrlVariables(url: string, i: number, variables: readonly Applica
 }
 
 function toApplicableVariable([name, values]: Variable): ApplicableVariable {
-  return [toReplaceRegExp(name), values.map(encodeURI)];
+  return [toReplaceRegExp(name), values.map(encodeValue)];
+}
+
+// encodeURI escapes "[" and "]", but they are legal RFC 3986 gen-delims and are required for IPv6 literals in the host,
+// e.g. https://[fe80::1]/api. Keep them as-is so new URL() can validate the result properly.
+function encodeValue(value: string): string {
+  return encodeURI(value).replace(/%5B/g, '[').replace(/%5D/g, ']');
 }
 
 function toReplaceRegExp(name: string): RegExp {

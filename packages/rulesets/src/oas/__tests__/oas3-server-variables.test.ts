@@ -3,6 +3,49 @@ import testRule from './__helpers__/tester';
 
 testRule('oas3-server-variables', [
   {
+    name: 'IPv6 literal as server variable value (#2554)',
+    document: {
+      openapi: '3.1.0',
+      servers: [
+        {
+          url: 'https://{host}/api/v1',
+          variables: {
+            host: {
+              default: '[fe80::dcad:beff:fe00:0001]',
+              enum: ['[fe80::dcad:beff:fe00:0001]', '[::1]', 'example.com'],
+            },
+          },
+        },
+      ],
+    },
+    errors: [],
+  },
+
+  {
+    name: 'invalid IPv6 literal as server variable value is still reported',
+    document: {
+      openapi: '3.1.0',
+      servers: [
+        {
+          url: 'https://{host}/api/v1',
+          variables: {
+            host: {
+              default: '[not-an-ip]',
+            },
+          },
+        },
+      ],
+    },
+    errors: [
+      {
+        message: 'A few substitutions of server variables resulted in invalid URLs: https://[not-an-ip]/api/v1',
+        path: ['servers', '0', 'variables'],
+        severity: DiagnosticSeverity.Error,
+      },
+    ],
+  },
+
+  {
     name: 'valid case',
     document: {
       openapi: '3.1.0',
