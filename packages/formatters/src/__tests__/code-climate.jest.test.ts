@@ -49,11 +49,11 @@ describe('Code climate formatter', () => {
           positions: {
             begin: {
               line: 61,
-              column: 8,
+              column: 9,
             },
             end: {
               line: 72,
-              column: 60,
+              column: 61,
             },
           },
         },
@@ -64,11 +64,11 @@ describe('Code climate formatter', () => {
           positions: {
             begin: {
               line: 61,
-              column: 8,
+              column: 9,
             },
             end: {
               line: 72,
-              column: 60,
+              column: 61,
             },
           },
         },
