@@ -137,7 +137,7 @@ export default {
     'overlay-action-description': {
       description: 'Action should have a non-empty "description".',
       severity: 'hint',
-      recommended: true,
+      recommended: false,
       resolved: false,
       given: '$.actions[*]',
       then: {
