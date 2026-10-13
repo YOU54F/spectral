@@ -40,6 +40,11 @@
       "uri": "/docs/getting-started/5-asyncapi.md"
     },
     {
+      "type": "item",
+      "title": "OpenRPC Support",
+      "uri": "/docs/getting-started/7-openrpc.md"
+    },
+    {
       "type": "divider",
       "title": "guides"
     },
@@ -151,6 +156,11 @@
       "type": "item",
       "title": "AsyncAPI Rules",
       "uri": "/docs/reference/asyncapi-rules.md"
+    },
+    {
+      "type": "item",
+      "title": "OpenRPC Rules",
+      "uri": "/docs/reference/openrpc-rules.md"
     },
     {
       "type": "item",
