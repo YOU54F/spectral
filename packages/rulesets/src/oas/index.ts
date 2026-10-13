@@ -729,12 +729,12 @@ const ruleset = {
       },
     },
     'oas3-links-parameters-expression': {
-      description: "The links.parameters object's values should be valid runtime expressions.",
+      description: 'Link parameters and requestBody expressions must be valid runtime expressions.',
       message: '{{error}}',
       severity: 0,
       formats: [oas3],
       recommended: true,
-      given: '#ResponseObject.links[*].parameters',
+      given: ['#LinkObject.parameters[*]', '#LinkObject.requestBody'],
       then: {
         function: runtimeExpression,
       },

@@ -9,6 +9,12 @@ export default createRulesetFunction<string, null>(
     options: null,
   },
   function runtimeExpressions(exp) {
+    // Link parameters and requestBody may hold constants as well as expressions.
+    // Only values that start with `$` are runtime expressions.
+    if (!exp.startsWith('$')) {
+      return;
+    }
+
     if (['$url', '$method', '$statusCode'].includes(exp)) {
       // valid expression
       return;
@@ -52,21 +58,15 @@ function validateJsonPointer(jsonPointer: string): void | IFunctionResult[] {
     ];
   }
 
-  while (jsonPointer.includes('/')) {
-    // remove everything up to and including the first `/`
-    jsonPointer = jsonPointer.replace(/[^/]*\//, '');
-    // get substring before the next `/`
-    const referenceToken: string = jsonPointer.includes('/')
-      ? jsonPointer.slice(0, jsonPointer.indexOf('/'))
-      : jsonPointer;
-    if (!isValidReferenceToken(referenceToken)) {
-      return [
-        {
-          message:
-            'String following `body#` is not a valid JSON pointer, see https://spec.openapis.org/oas/v3.1.0#runtime-expressions for more information',
-        },
-      ];
-    }
+  // RFC 6901: every reference token may only use `~` as part of the `~0` or `~1` escapes.
+  const referenceTokens = jsonPointer.slice(1).split('/');
+  if (!referenceTokens.every(isValidReferenceToken)) {
+    return [
+      {
+        message:
+          'String following `body#` is not a valid JSON pointer, see https://spec.openapis.org/oas/v3.1.0#runtime-expressions for more information',
+      },
+    ];
   }
 }
 
@@ -96,15 +96,5 @@ function validateToken(token: string): void | IFunctionResult[] {
 }
 
 function isValidReferenceToken(referenceToken: string): boolean {
-  return isValidEscaped(referenceToken) || isValidUnescaped(referenceToken);
-}
-
-function isValidEscaped(escaped: string): boolean {
-  // escaped must be empty/null or match the given pattern
-  return /^(~[01])?$/.test(escaped);
-}
-
-function isValidUnescaped(unescaped: string): boolean {
-  // unescaped may be empty/null, expect no `/` and no `~` chars
-  return !/[/~]/.test(unescaped);
+  return /^(?:[^~]|~[01])*$/.test(referenceToken);
 }

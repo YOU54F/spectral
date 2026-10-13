@@ -32,9 +32,12 @@ describe('runtimeExpression', () => {
       },
     );
 
-    test.each(['$request.body#/~0', '$response.body#/~1'])('no messages for valid expressions', expr => {
-      expect(runRuntimeExpression(expr)).toBeUndefined();
-    });
+    test.each(['$request.body#/~0', '$response.body#/~1', '$response.body#/a~1b/~01', '$response.body#/'])(
+      'no messages for valid expressions',
+      expr => {
+        expect(runRuntimeExpression(expr)).toBeUndefined();
+      },
+    );
 
     test.each([
       '$request.query.query-name',
@@ -77,18 +80,19 @@ describe('runtimeExpression', () => {
       },
     );
 
-    test.each(['$request.body#/no/tilde/tokens/in/unescaped~', '$response.body#/invalid/escaped/~01'])(
-      'errors for incorrect reference tokens',
-      expr => {
-        const results = runRuntimeExpression(expr);
-        expect(results).toEqual([
-          expect.objectContaining({
-            message:
-              'String following `body#` is not a valid JSON pointer, see https://spec.openapis.org/oas/v3.1.0#runtime-expressions for more information',
-          }),
-        ]);
-      },
-    );
+    test.each([
+      '$request.body#/no/tilde/tokens/in/unescaped~',
+      '$response.body#/invalid/escaped/~2',
+      '$response.body#/a~b',
+    ])('errors for incorrect reference tokens', expr => {
+      const results = runRuntimeExpression(expr);
+      expect(results).toEqual([
+        expect.objectContaining({
+          message:
+            'String following `body#` is not a valid JSON pointer, see https://spec.openapis.org/oas/v3.1.0#runtime-expressions for more information',
+        }),
+      ]);
+    });
 
     test.each(['$request.query.', '$response.query.'])('error for invalid name', expr => {
       const invalidString = String.fromCodePoint(0x80);
