@@ -1,0 +1,1 @@
+The schema here is the published Arazzo 1.1 schema, https://spec.openapis.org/arazzo/1.1/schema/2026-04-15 (source: OAI/Arazzo-Specification `src/schemas/validation/schema.yaml` on the v1.1-dev branch), used unmodified.
