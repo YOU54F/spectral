@@ -781,6 +781,34 @@ paths:
                 # marp! no, can only have one or the other
 ```
 
+### oas3-links-parameters-expression
+
+Link Object `parameters` values and `requestBody` that are runtime expressions (strings starting with `$`) must be valid according to the [runtime expression syntax](https://spec.openapis.org/oas/v3.1.0#runtime-expressions). Constant values are not checked.
+
+**Recommended:** Yes
+
+**Default severity when enabled:** error
+
+**Bad Example**
+
+```yaml
+links:
+  GetUserByUserId:
+    operationId: getUser
+    parameters:
+      userId: $response.body#id
+```
+
+**Good Example**
+
+```yaml
+links:
+  GetUserByUserId:
+    operationId: getUser
+    parameters:
+      userId: $response.body#/id
+```
+
 ### oas3-operation-security-defined
 
 Operation `security` values must match a scheme defined in the `components.securitySchemes` object.
