@@ -26,7 +26,7 @@ export default function arazzoStepValidation(targetVal: ArazzoSpecification, _op
     }
 
     workflow.steps.forEach((step, stepIndex) => {
-      const { operationId, operationPath, workflowId, channelPath, dependsOn } = step;
+      const { operationId, operationPath, workflowId, channelPath, dependsOn, operationName } = step;
 
       // Validate operationId
       if (operationId != null) {
@@ -90,6 +90,24 @@ export default function arazzoStepValidation(targetVal: ArazzoSpecification, _op
               path: ['workflows', workflowIndex, 'steps', stepIndex, 'channelPath'],
             });
           }
+        }
+      }
+
+      // Validate operationName (Arazzo 1.2, WSDL sources only)
+      if (typeof operationName === 'string' && operationName.startsWith('$sourceDescriptions.')) {
+        const sourceName = operationName.split('.')[1];
+        const namePath = ['workflows', workflowIndex, 'steps', stepIndex, 'operationName'];
+
+        if (!sourceDescriptionNames.has(sourceName)) {
+          results.push({
+            message: `Source description "${sourceName}" not found for operationName "${operationName}" in step "${step.stepId}".`,
+            path: namePath,
+          });
+        } else if (sourceDescriptionTypes.get(sourceName) !== 'wsdl') {
+          results.push({
+            message: `Source description "${sourceName}" referenced by operationName in step "${step.stepId}" must be of type "wsdl".`,
+            path: namePath,
+          });
         }
       }
 

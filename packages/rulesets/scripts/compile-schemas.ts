@@ -26,6 +26,7 @@ const schemas = [
   'oas/schemas/oas/v3.2/index.json',
   'arazzo/schemas/arazzo/v1.0/index.json',
   'arazzo/schemas/arazzo/v1.1/index.json',
+  'arazzo/schemas/arazzo/v1.2/index.json',
 ].map(async schema => JSON.parse(await fs.promises.readFile(path.join(cwd, schema), 'utf8')));
 
 const log = process.argv.includes('--quiet')
@@ -64,6 +65,7 @@ Promise.all(schemas)
       oas3_2: 'https://spec.openapis.org/oas/3.2/schema/2025-11-23',
       arazzo1_0: 'https://spec.openapis.org/arazzo/1.0/schema/2024-08-01',
       arazzo1_1: 'https://spec.openapis.org/arazzo/1.1/schema/2026-04-15',
+      arazzo1_2: 'https://spec.openapis.org/arazzo/1.2/schema/WORK-IN-PROGRESS',
     });
 
     const minified = (

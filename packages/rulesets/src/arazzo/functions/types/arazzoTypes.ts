@@ -66,12 +66,14 @@ export type Step = {
   correlationId?: string;
   timeout?: number;
   dependsOn?: string[];
+  // Arazzo 1.2 (WSDL/SOAP)
+  operationName?: string;
 };
 
 export type SourceDescription = {
   name: string;
   url: string;
-  type?: 'arazzo' | 'openapi' | 'asyncapi';
+  type?: 'arazzo' | 'openapi' | 'asyncapi' | 'wsdl';
 };
 
 export type Workflow = {

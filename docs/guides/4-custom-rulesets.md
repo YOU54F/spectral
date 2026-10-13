@@ -24,6 +24,7 @@ Formats are an optional way to specify which API description formats a rule, or 
 
 - `arazzo1_0` (Arazzo v1.0.x)
 - `arazzo1_1` (Arazzo v1.1.x)
+- `arazzo1_2` (Arazzo v1.2.x, work in progress)
 - `aas2` (AsyncAPI v2.x)
 - `aas2_0` (AsyncAPI v2.0.0)
 - `aas2_1` (AsyncAPI v2.1.0)

@@ -1,0 +1,1 @@
+The schema here is the Arazzo 1.2 work-in-progress schema from OAI/Arazzo-Specification `src/schemas/validation/schema.yaml` on the v1.2-dev branch (commit 6e08955), converted to JSON and otherwise unmodified. Arazzo 1.2 is not yet released, so the `$id` keeps the upstream `WORK-IN-PROGRESS` placeholder. Replace it with the dated published schema once 1.2 ships.
