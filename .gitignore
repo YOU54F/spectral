@@ -12,6 +12,7 @@ node_modules
 
 packages/formatters/src/html/templates.ts
 packages/rulesets/src/oas/schemas/validators.ts
+packages/rulesets/src/openrpc/schemas/validators.ts
 packages/cli/binaries
 packages/*/src/version.ts
 /test-harness/tmp/

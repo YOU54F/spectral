@@ -2,6 +2,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
+import Ajv from 'ajv';
 import Ajv2020 from 'ajv/dist/2020.js';
 import standaloneCode from 'ajv/dist/standalone/index.js';
 import ajvErrors from 'ajv-errors';
@@ -26,6 +27,62 @@ const schemas = [
   'oas/schemas/oas/v3.2/index.json',
   'arazzo/schemas/arazzo/v1.0/index.json',
 ].map(async schema => JSON.parse(await fs.promises.readFile(path.join(cwd, schema), 'utf8')));
+
+// OpenRPC schemas are draft-07 based and use the json-schema-tools meta schema, so they are compiled separately.
+// Both OpenRPC schemas share the same "$id" upstream (https://meta.open-rpc.org/), so we assign versioned ids here.
+// They also reference the json-schema-tools meta schema both with and without a trailing slash, hence it is registered twice.
+const openrpcSchemas = [
+  ['openrpc/schemas/json-schema-tools/schema.json', null],
+  ['openrpc/schemas/json-schema-tools/schema.json', 'https://meta.json-schema.tools'],
+  ['openrpc/schemas/openrpc/v1.3/schema.json', 'https://meta.open-rpc.org/1.3/schema.json'],
+  ['openrpc/schemas/openrpc/v1.4/schema.json', 'https://meta.open-rpc.org/1.4/schema.json'],
+].map(async ([schema, id]) => {
+  const json = discriminateOneOf(
+    JSON.parse(await fs.promises.readFile(path.join(cwd, schema as string), 'utf8')) as Record<string, unknown>,
+  );
+  return id === null ? json : { ...json, $id: id };
+});
+
+// Upstream OpenRPC schemas use `oneOf: [<object>, <referenceObject>]` (and `oneOf: [<object>, <boolean>]` for JSON Schema),
+// which makes Ajv report errors for every branch. Since the branches are trivially discriminable,
+// we turn them into equivalent if/then/else constructs so that only errors of the relevant branch are reported.
+function discriminateOneOf<T>(node: T): T {
+  if (Array.isArray(node)) {
+    return node.map(discriminateOneOf) as unknown as T;
+  }
+
+  if (node === null || typeof node !== 'object') {
+    return node;
+  }
+
+  const { oneOf, ...rest } = node as Record<string, unknown>;
+  const mapped = Object.fromEntries(Object.entries(rest).map(([key, value]) => [key, discriminateOneOf(value)]));
+  if (!Array.isArray(oneOf) || oneOf.length !== 2) {
+    return (oneOf === void 0 ? mapped : { ...mapped, oneOf: discriminateOneOf(oneOf) }) as T;
+  }
+
+  const refs = oneOf.map(item =>
+    item !== null && typeof item === 'object' ? (item as { $ref?: unknown }).$ref : void 0,
+  );
+  const discriminators = {
+    '#/definitions/referenceObject': { required: ['$ref'] },
+    '#/definitions/JSONSchemaBoolean': { type: 'boolean' },
+  };
+
+  for (const [ref, condition] of Object.entries(discriminators)) {
+    const index = refs.indexOf(ref);
+    if (index !== -1) {
+      return {
+        ...mapped,
+        if: condition,
+        then: oneOf[index] as unknown,
+        else: discriminateOneOf(oneOf[1 - index]),
+      } as T;
+    }
+  }
+
+  return { ...mapped, oneOf: discriminateOneOf(oneOf) } as T;
+}
 
 const log = process.argv.includes('--quiet')
   ? (): void => {
@@ -96,6 +153,52 @@ Promise.all(schemas)
     );
 
     await fs.promises.writeFile(path.join(arazzoTarget, '..', basename), ['// @ts-nocheck', minified].join('\n'));
+  })
+  .then(() => Promise.all(openrpcSchemas))
+  .then(async schemas => {
+    const ajv = new Ajv({
+      schemas,
+      allErrors: true,
+      messages: true,
+      strict: false,
+      inlineRefs: false,
+      validateSchema: false,
+      code: {
+        esm: true,
+        source: true,
+      },
+    });
+
+    ajvFormats(ajv);
+
+    const target = path.join(cwd, 'openrpc/schemas/validators.ts');
+    const code = standaloneCode(ajv, {
+      openrpc1_3: 'https://meta.open-rpc.org/1.3/schema.json',
+      openrpc1_4: 'https://meta.open-rpc.org/1.4/schema.json',
+    });
+
+    const minified = (
+      await minify(code, {
+        compress: {
+          passes: 2,
+        },
+        ecma: 2020,
+        module: true,
+        format: {
+          comments: false,
+        },
+      })
+    ).code as string;
+
+    log(
+      'writing %s size is %dKB (original), %dKB (minified) %dKB (minified + gzipped)',
+      target,
+      Math.round((code.length / 1024) * 100) / 100,
+      Math.round((minified.length / 1024) * 100) / 100,
+      Math.round((sync(minified) / 1024) * 100) / 100,
+    );
+
+    await fs.promises.writeFile(target, ['// @ts-nocheck', minified].join('\n'));
   })
   .then(() => {
     log(chalk.green('Validators generated.'));
