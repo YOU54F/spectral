@@ -1,6 +1,6 @@
 # Rulesets
 
-Spectral comes with three rulesets built-in: [OpenAPI](../reference/openapi-rules.md), [AsyncAPI](../reference/asyncapi-rules.md), and [Arazzo](../reference/arazzo-rules.md). They're good starting points, but the true power of Spectral comes with customizing and creating a ruleset that fits your project or organization. Creating a ruleset can help you and your team improve your API design and API development process, and help you create better APIs.
+Spectral comes with four rulesets built-in: [OpenAPI](../reference/openapi-rules.md), [AsyncAPI](../reference/asyncapi-rules.md), [Arazzo](../reference/arazzo-rules.md), and [MCP](../reference/mcp-rules.md). They're good starting points, but the true power of Spectral comes with customizing and creating a ruleset that fits your project or organization. Creating a ruleset can help you and your team improve your API design and API development process, and help you create better APIs.
 
 Let's look through the keywords that make up a ruleset, so you can learn how to tweak a distributed ruleset to work for you, or make your own ruleset from scratch to power your organizations [API Style Guide](https://stoplight.io/api-style-guides-guidelines-and-best-practices/?utm_source=github&utm_medium=spectral&utm_campaign=docs).
 
@@ -46,6 +46,7 @@ Formats are an optional way to specify which API description formats a rule, or 
 - `json-schema-draft7` (`$schema` says this is JSON Schema Draft 07)
 - `json-schema-2019-09` (`$schema` says this is JSON Schema 2019-09)
 - `json-schema-2020-12` (`$schema` says this is JSON Schema 2020-12)
+- `mcpServer` (MCP registry `server.json`)
 
 Specifying the format is optional, so you can ignore this if all the rules you are writing apply to any document you lint, or if you have specific rulesets for different formats. If you'd like to use one ruleset for multiple formats, use the `formats` key.
 
