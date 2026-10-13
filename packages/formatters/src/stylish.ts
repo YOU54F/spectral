@@ -80,12 +80,7 @@ export const stylish: Formatter = results => {
       stringLength(str) {
         return stripAnsi(str).length;
       },
-    })
-      .split('\n')
-      .map((el: string) =>
-        el.replace(/(\d+)\s+(\d+)/u, (m: string, p1: string, p2: string) => chalk.dim(`${p1}:${p2}`)),
-      )
-      .join('\n')}\n\n`;
+    })}\n\n`;
   });
 
   if (summaryText === null) {
