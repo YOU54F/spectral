@@ -34,7 +34,7 @@
     "lint": "yarn prelint && yarn lint.prettier && yarn lint.eslint",
     "lint.fix": "yarn lint.prettier --write && yarn lint.eslint --fix",
     "lint.eslint": "eslint --cache --cache-location .cache/.eslintcache packages test-harness",
-    "lint.prettier": "prettier --ignore-path .prettierignore --ignore-unknown --check packages/core/src/ruleset/meta/*.json packages/rulesets/src/{asyncapi,oas,arazzo}/schemas/**/*.json docs/**/*.md README.md",
+    "lint.prettier": "prettier --ignore-path .prettierignore --ignore-unknown --check packages/core/src/ruleset/meta/*.json packages/rulesets/src/{asyncapi,oas,arazzo,overlay}/schemas/**/*.json docs/**/*.md README.md",
     "pretest": "yarn workspaces foreach run pretest",
     "test": "yarn pretest && yarn test.karma && yarn test.jest",
     "pretest.harness": "ts-node -T test-harness/scripts/generate-tests.ts",
@@ -161,7 +161,7 @@
     "packages/core/src/ruleset/meta/*.json": [
       "prettier --ignore-path .prettierignore --write"
     ],
-    "packages/rulesets/src/{asyncapi,oas,arazzo}/schemas/**/*.json": [
+    "packages/rulesets/src/{asyncapi,oas,arazzo,overlay}/schemas/**/*.json": [
       "prettier --ignore-path .prettierignore --write"
     ]
   },
