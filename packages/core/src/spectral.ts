@@ -50,7 +50,7 @@ export class Spectral {
     const ruleset = this.ruleset.fromSource(document.source);
 
     const inventory = new DocumentInventory(document, this._resolver);
-    await inventory.resolve();
+    await inventory.resolve({ unresolvedPaths: this._getUnresolvedPaths(document, ruleset.formats) });
 
     const runner = new Runner(inventory);
     runner.results.push(...this._filterParserErrors(document.diagnostics, ruleset.parserOptions));
@@ -85,6 +85,22 @@ export class Spectral {
 
   public setRuleset(ruleset: RulesetDefinition | Ruleset): void {
     this.ruleset = ruleset instanceof Ruleset ? ruleset : new Ruleset(ruleset);
+  }
+
+  // Only formats opting in via unresolvedPaths are considered, so documents of other formats are resolved as before.
+  private _getUnresolvedPaths(document: IDocument, formats: Iterable<Format>): string[] {
+    const unresolvedPaths: string[] = [];
+    if (document.formats === null) return unresolvedPaths;
+
+    // formats explicitly assigned to the document take precedence, mirroring regular format matching
+    const isPreassigned = document.formats !== void 0;
+    for (const format of document.formats ?? formats) {
+      if (format.unresolvedPaths === void 0 || format.unresolvedPaths.length === 0) continue;
+      if (!isPreassigned && !format(document.data, document.source)) continue;
+      unresolvedPaths.push(...format.unresolvedPaths);
+    }
+
+    return unresolvedPaths;
   }
 
   private _generateUnrecognizedFormatError(document: IDocument, formats: Format[]): ISpectralDiagnostic {

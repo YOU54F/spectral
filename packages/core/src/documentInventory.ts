@@ -1,7 +1,14 @@
-import { decodePointerFragment, encodePointerUriFragment, extractSourceFromRef, isLocalRef } from '@stoplight/json';
+import {
+  decodePointerFragment,
+  encodePointerUriFragment,
+  extractSourceFromRef,
+  isLocalRef,
+  pointerToPath,
+} from '@stoplight/json';
 import { extname, resolve } from '@stoplight/path';
 import { Dictionary, IParserResult, JsonPath } from '@stoplight/types';
 import { isObjectLike } from 'lodash';
+import { JSONPath } from 'jsonpath-plus';
 import { Document, IDocument } from './document';
 import { Resolver, ResolveResult } from '@stoplight/spectral-ref-resolver';
 
@@ -16,6 +23,17 @@ export type DocumentInventoryItem = {
   path: JsonPath;
   missingPropertyPath: JsonPath;
 };
+
+export type DocumentInventoryResolveOptions = {
+  /**
+   * JSONPath expressions selecting subtrees of the root document whose $refs must not be resolved.
+   * See {@link Format.unresolvedPaths}.
+   */
+  unresolvedPaths?: ReadonlyArray<string>;
+};
+
+type ResolveOpts = NonNullable<Parameters<Resolver['resolve']>[1]>;
+type TransformRef = NonNullable<ResolveOpts['transformRef']>;
 
 export interface IDocumentInventory {
   readonly graph: ResolveResult['graph'] | null;
@@ -62,7 +80,7 @@ export class DocumentInventory implements IDocumentInventory {
     }
   }
 
-  public async resolve(): Promise<void> {
+  public async resolve(opts?: DocumentInventoryResolveOptions): Promise<void> {
     if (!isObjectLike(this.document.data)) {
       this.graph = null;
       this.resolved = this.document.data;
@@ -70,9 +88,12 @@ export class DocumentInventory implements IDocumentInventory {
       return;
     }
 
+    const transformRef = this.createTransformRef(opts?.unresolvedPaths);
+
     const resolveResult = await this.resolver.resolve(this.document.data, {
       ...(this.document.source !== null ? { baseUri: this.document.source } : null),
       parseResolveResult: this.parseResolveResult,
+      ...(transformRef !== null ? { transformRef } : null),
     });
 
     this.graph = resolveResult.graph;
@@ -184,6 +205,43 @@ export class DocumentInventory implements IDocumentInventory {
     }
   }
 
+  // Builds a transformRef hook that skips $refs located within the subtrees selected by unresolvedPaths.
+  // Returning undefined from transformRef makes the resolver treat the value as a plain object, so the $ref is neither
+  // followed nor reported as an error. Returns null (resolver left untouched) when there is nothing to skip.
+  protected createTransformRef(unresolvedPaths: ReadonlyArray<string> | undefined): TransformRef | null {
+    if (unresolvedPaths === void 0 || unresolvedPaths.length === 0) return null;
+
+    const skipped: string[][] = [];
+    for (const path of unresolvedPaths) {
+      for (const match of JSONPath<string[]>({ path, json: this.document.data as object, resultType: 'path' })) {
+        skipped.push(JSONPath.toPathArray(match).slice(1));
+      }
+    }
+
+    if (skipped.length === 0) return null;
+
+    // a custom resolver may come with its own transformRef - keep honouring it
+    const originalTransformRef = (this.resolver as unknown as { transformRef?: TransformRef }).transformRef;
+    const rootUri = this.document.source ?? '';
+
+    return (refOpts, ctx) => {
+      if (refOpts.jsonPointer !== void 0 && isSameUri(String(refOpts.uri), rootUri)) {
+        let refPath: string[];
+        try {
+          refPath = pointerToPath(refOpts.jsonPointer).map(String);
+        } catch {
+          refPath = [];
+        }
+
+        if (skipped.some(skippedPath => isPathWithin(refPath, skippedPath))) {
+          return;
+        }
+      }
+
+      return originalTransformRef !== void 0 ? originalTransformRef(refOpts, ctx) : refOpts.ref;
+    };
+  }
+
   protected convertRefMapKeyToPath(refPath: string): JsonPath {
     if (refPath.startsWith('#/')) {
       refPath = refPath.slice(2);
@@ -211,4 +269,17 @@ export class DocumentInventory implements IDocumentInventory {
 
     return Promise.resolve(resolveOpts);
   };
+}
+
+function isPathWithin(path: string[], parent: string[]): boolean {
+  return parent.length <= path.length && parent.every((segment, i) => segment === path[i]);
+}
+
+function isSameUri(uri: string, source: string): boolean {
+  if (uri === source) return true;
+  try {
+    return decodeURI(uri) === source;
+  } catch {
+    return false;
+  }
 }
