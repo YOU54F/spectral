@@ -114,6 +114,26 @@ describe('Core Functions / Schema', () => {
     ]);
   });
 
+  describe('multipleOf with decimal values (#2090)', () => {
+    const schema = {
+      type: 'number',
+      multipleOf: 0.01,
+    };
+
+    it.each([19.99, 0.07, 1.1, 4.35, 100])('accepts %s', async value => {
+      expect(await runSchema(value, { schema })).toEqual([]);
+    });
+
+    it.each([19.995, 0.001, 1.0000001])('rejects %s', async value => {
+      expect(await runSchema(value, { schema })).toEqual([
+        {
+          message: 'Number must be multiple of 0.01',
+          path: [],
+        },
+      ]);
+    });
+  });
+
   describe('validates falsy values such as', () => {
     it('empty string', async () => {
       const schema: JSONSchema = {

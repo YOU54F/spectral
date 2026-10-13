@@ -34,6 +34,8 @@ function createAjvInstance(Ajv: typeof AjvCore, allErrors: boolean): AjvCore {
     allowUnionTypes: true,
     logger,
     unicodeRegExp: false,
+    // without it, IEEE 754 rounding makes valid values fail, e.g. 19.99 is "not a multiple of" 0.01 (#2090)
+    multipleOfPrecision: 8,
   });
   addFormats(ajv);
   if (allErrors) {
