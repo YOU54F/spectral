@@ -83,6 +83,14 @@ rules:
 
 Custom formats can be registered via the [JS API](../guides/3-javascript.md), but the [CLI](../guides/2-cli.md) is limited to using the predefined formats.
 
+A format can also declare `unresolvedPaths`: JSONPath expressions selecting parts of the document whose `$ref`s point into a different document and so must not be resolved. Spectral leaves `$ref`s within those parts untouched and doesn't report them as `invalid-ref`.
+
+```js
+const myFormat = document => typeof document === "object" && document !== null && "fragments" in document;
+myFormat.displayName = "My Format";
+myFormat.unresolvedPaths = ["$.fragments[*].value"];
+```
+
 ### Documentation URL
 
 Optionally provide a documentation URL to your ruleset to help end-users find more information about warnings. Result messages are sometimes be more than enough to explain what the problem is, but it can also be beneficial to explain _why_ a message exists, and this is a great place to do that.
