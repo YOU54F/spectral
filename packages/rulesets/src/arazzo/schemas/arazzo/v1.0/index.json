@@ -452,23 +452,21 @@
         "condition": {
           "description": "The condition to apply",
           "type": "string"
-        }
-      },
-      "anyOf": [
-        {
-          "type": "object",
-          "properties": {
-            "type": {
-              "description": "The type of condition to be applied",
+        },
+        "type": {
+          "description": "The type of condition to be applied, or a Criterion Expression Type Object specifying the type and version of the expression",
+          "oneOf": [
+            {
+              "type": "string",
               "enum": ["simple", "regex", "jsonpath", "xpath"],
               "default": "simple"
+            },
+            {
+              "$ref": "#/$defs/criterion-expression-type-object"
             }
-          }
-        },
-        {
-          "$ref": "#/$defs/criterion-expression-type-object"
+          ]
         }
-      ],
+      },
       "required": ["condition"],
       "dependentRequired": {
         "type": ["context"]
@@ -527,7 +525,8 @@
           }
         }
       ],
-      "$ref": "#/$defs/specification-extensions"
+      "$ref": "#/$defs/specification-extensions",
+      "unevaluatedProperties": false
     },
     "success-action-object": {
       "$comment": "https://spec.openapis.org/arazzo/v1.0.0#success-action-object",
