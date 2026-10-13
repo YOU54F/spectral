@@ -16,6 +16,16 @@ import { CLIError } from '../errors';
 
 const formatOptions = Object.values(OutputFormat);
 
+// Formats whose stdout output is parsed by other tools. Writing the human-readable
+// "No results" notice to stdout alongside them would corrupt that output.
+const MACHINE_READABLE_FORMATS: ReadonlySet<OutputFormat> = new Set([
+  OutputFormat.JSON,
+  OutputFormat.JUNIT,
+  OutputFormat.SARIF,
+  OutputFormat.CODE_CLIMATE,
+  OutputFormat.GITLAB,
+]);
+
 const lintCommand: CommandModule = {
   describe: 'lint JSON/YAML documents from files or URLs',
   command: 'lint [documents..]',
@@ -238,7 +248,10 @@ const lintCommand: CommandModule = {
 
       if (linterResult.results.length > 0) {
         process.exit(severeEnoughToFail(linterResult.results, failSeverity) ? 1 : 0);
-      } else if (config.quiet !== true && !format.includes(OutputFormat.JSON)) {
+      } else if (
+        config.quiet !== true &&
+        !format.some(f => MACHINE_READABLE_FORMATS.has(f) && (output?.[f] ?? '<stdout>') === '<stdout>')
+      ) {
         const isErrorSeverity = getDiagnosticSeverity(failSeverity) === DiagnosticSeverity.Error;
         process.stdout.write(
           `No results with a severity of '${failSeverity}' ${isErrorSeverity ? '' : 'or higher '}found!\n`,

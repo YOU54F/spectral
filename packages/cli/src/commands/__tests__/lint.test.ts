@@ -293,23 +293,33 @@ describe('lint', () => {
     expect(writeOutput).toHaveBeenCalledWith('<formatted output>', 'cc.json');
   });
 
-  it('does not write informational message to stdout when format is json and no results found', async () => {
-    (lint as jest.Mock).mockReset();
-    (lint as jest.Mock).mockResolvedValueOnce({ results: [], resolvedRuleset: {} });
-    (formatOutput as jest.Mock).mockReturnValueOnce('[]');
-    (writeOutput as jest.Mock).mockResolvedValueOnce(undefined);
+  describe('when no results are found', () => {
+    beforeEach(() => {
+      (lint as jest.Mock).mockReset();
+      (lint as jest.Mock).mockResolvedValue({ results: [], resolvedRuleset: {} });
+      (formatOutput as jest.Mock).mockReset();
+      (formatOutput as jest.Mock).mockReturnValue('<formatted output>');
+      (writeOutput as jest.Mock).mockReset();
+      (writeOutput as jest.Mock).mockResolvedValue(undefined);
+    });
 
-    await run(`lint -f json ./__fixtures__/empty-oas2-document.json`);
-    expect(process.stdout.write).not.toHaveBeenCalledWith(expect.stringContaining('No results'));
-  });
+    it.each(['json', 'junit', 'sarif', 'code-climate', 'gitlab'])(
+      'does not write the informational message when %s is written to stdout (#2912)',
+      async format => {
+        await run(`lint -f ${format} ./__fixtures__/empty-oas2-document.json`);
+        expect(process.stdout.write).not.toHaveBeenCalledWith(expect.stringContaining('No results'));
+      },
+    );
 
-  it('writes informational message to stdout when format is stylish and no results found', async () => {
-    (lint as jest.Mock).mockReset();
-    (lint as jest.Mock).mockResolvedValueOnce({ results: [], resolvedRuleset: {} });
-    (formatOutput as jest.Mock).mockReturnValueOnce('');
-    (writeOutput as jest.Mock).mockResolvedValueOnce(undefined);
+    it('writes the informational message when json is written to a file', async () => {
+      await run(`lint -f json -o results.json ./__fixtures__/empty-oas2-document.json`);
+      expect(writeOutput).toHaveBeenCalledWith('<formatted output>', 'results.json');
+      expect(process.stdout.write).toHaveBeenCalledWith(expect.stringContaining('No results'));
+    });
 
-    await run(`lint -f stylish ./__fixtures__/empty-oas2-document.json`);
-    expect(process.stdout.write).toHaveBeenCalledWith(expect.stringContaining('No results'));
+    it('writes the informational message when format is stylish', async () => {
+      await run(`lint -f stylish ./__fixtures__/empty-oas2-document.json`);
+      expect(process.stdout.write).toHaveBeenCalledWith(expect.stringContaining('No results'));
+    });
   });
 });
