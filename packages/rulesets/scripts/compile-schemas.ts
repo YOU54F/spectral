@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
 import Ajv2020 from 'ajv/dist/2020.js';
+import AjvDraft7 from 'ajv/dist/ajv.js';
 import standaloneCode from 'ajv/dist/standalone/index.js';
 import ajvErrors from 'ajv-errors';
 import ajvFormats from 'ajv-formats';
@@ -97,6 +98,7 @@ Promise.all(schemas)
 
     await fs.promises.writeFile(path.join(arazzoTarget, '..', basename), ['// @ts-nocheck', minified].join('\n'));
   })
+  .then(compileMcpValidators)
   .then(() => {
     log(chalk.green('Validators generated.'));
   })
@@ -104,3 +106,54 @@ Promise.all(schemas)
     console.error(chalk.red('Error generating validators %s'), e.message);
     process.exit(1);
   });
+
+// MCP server.json schemas are draft-07, so they are compiled separately into their own module.
+async function compileMcpValidators(): Promise<void> {
+  const mcpSchemas = await Promise.all(
+    ['mcp/schemas/server/2025-12-11/server.schema.json'].map(
+      async schema => JSON.parse(await fs.promises.readFile(path.join(cwd, schema), 'utf8')) as Record<string, unknown>,
+    ),
+  );
+
+  const ajv = new AjvDraft7({
+    schemas: mcpSchemas,
+    allErrors: true,
+    messages: true,
+    strict: false,
+    inlineRefs: false,
+    code: {
+      esm: true,
+      source: true,
+    },
+  });
+
+  ajvFormats(ajv);
+
+  const target = path.join(cwd, 'mcp/schemas/validators.ts');
+  const code = standaloneCode(ajv, {
+    mcpServer2025_12_11: 'https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json',
+  });
+
+  const minified = (
+    await minify(code, {
+      compress: {
+        passes: 2,
+      },
+      ecma: 2020,
+      module: true,
+      format: {
+        comments: false,
+      },
+    })
+  ).code as string;
+
+  log(
+    'writing %s size is %dKB (original), %dKB (minified) %dKB (minified + gzipped)',
+    target,
+    Math.round((code.length / 1024) * 100) / 100,
+    Math.round((minified.length / 1024) * 100) / 100,
+    Math.round((sync(minified) / 1024) * 100) / 100,
+  );
+
+  await fs.promises.writeFile(target, ['// @ts-nocheck', minified].join('\n'));
+}
