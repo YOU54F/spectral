@@ -35,4 +35,23 @@ describe('Stylish formatter', () => {
    'information',
  )}  operation-description   Operation \`description\` must be present and non-empty string.            paths./pets/{petId}.get`);
   });
+
+  test('should not alter numbers separated by whitespace in the message (#2487)', () => {
+    const result = stylish(
+      [
+        {
+          code: 'numeric-message',
+          message: 'Value 12 34 is not allowed, use 1 2 3',
+          path: ['info'],
+          severity: DiagnosticSeverity.Error,
+          source: 'test.yaml',
+          range: { start: { line: 2, character: 9 }, end: { line: 2, character: 12 } },
+        },
+      ],
+      { failSeverity: DiagnosticSeverity.Error },
+    );
+    expect(result).toContain('Value 12 34 is not allowed, use 1 2 3');
+    expect(result).not.toContain('12:34');
+    expect(result).toContain('3:10');
+  });
 });
