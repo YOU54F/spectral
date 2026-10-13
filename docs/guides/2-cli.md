@@ -62,6 +62,7 @@ Here you can build a [custom ruleset](../getting-started/3-rulesets.md), or exte
 - [OpenAPI ruleset](../reference/openapi-rules.md)
 - [AsyncAPI ruleset](../reference/asyncapi-rules.md)
 - [Arazzo ruleset](../reference/arazzo-rules.md)
+- [A2A Agent Card ruleset](../reference/a2a-rules.md)
 
 ## Error Results
 

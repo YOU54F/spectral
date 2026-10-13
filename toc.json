@@ -36,6 +36,11 @@
     },
     {
       "type": "item",
+      "title": "A2A Agent Card Support",
+      "uri": "/docs/getting-started/7-a2a.md"
+    },
+    {
+      "type": "item",
       "title": "AsyncAPI Support",
       "uri": "/docs/getting-started/5-asyncapi.md"
     },
@@ -146,6 +151,11 @@
       "type": "item",
       "title": "Arazzo Rules",
       "uri": "/docs/reference/arazzo-rules.md"
+    },
+    {
+      "type": "item",
+      "title": "A2A Agent Card Rules",
+      "uri": "/docs/reference/a2a-rules.md"
     },
     {
       "type": "item",
