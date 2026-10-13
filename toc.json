@@ -31,18 +31,23 @@
     },
     {
       "type": "item",
-      "title": "Arazzo Support",
-      "uri": "/docs/getting-started/6-arazzo.md"
-    },
-    {
-      "type": "item",
       "title": "AsyncAPI Support",
       "uri": "/docs/getting-started/5-asyncapi.md"
     },
     {
       "type": "item",
+      "title": "Arazzo Support",
+      "uri": "/docs/getting-started/6-arazzo.md"
+    },
+    {
+      "type": "item",
       "title": "MCP Server Support",
       "uri": "/docs/getting-started/7-mcp.md"
+    },
+    {
+      "type": "item",
+      "title": "A2A Agent Card Support",
+      "uri": "/docs/getting-started/8-a2a.md"
     },
     {
       "type": "divider",
@@ -102,7 +107,7 @@
           "title": "JavaScript Ruleset Format",
           "uri": "/docs/guides/4f-js-rulesets.md"
         }
-       ]    
+      ]
     },
     {
       "type": "item",
@@ -151,6 +156,11 @@
       "type": "item",
       "title": "Arazzo Rules",
       "uri": "/docs/reference/arazzo-rules.md"
+    },
+    {
+      "type": "item",
+      "title": "A2A Agent Card Rules",
+      "uri": "/docs/reference/a2a-rules.md"
     },
     {
       "type": "item",

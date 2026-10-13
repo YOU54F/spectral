@@ -11,6 +11,7 @@ const REPLACEMENTS = {
   'spectral:asyncapi': 'asyncapi',
   'spectral:arazzo': 'arazzo',
   'spectral:mcp': 'mcp',
+  'spectral:a2a': 'a2a',
 };
 
 export { transformer as default };

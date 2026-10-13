@@ -1,0 +1,62 @@
+====test====
+Validate an A2A 1.0 Agent Card with the spectral:a2a ruleset
+====document====
+name: Recipe Agent
+description: Finds and plans recipes.
+version: 1.0.0
+supportedInterfaces:
+  - url: https://agent.example.com/a2a/v1
+    protocolBinding: JSONRPC
+    protocolVersion: "1.0"
+  - url: http://agent.example.com/a2a/rest
+    protocolBinding: HTTP+JSON
+    protocolVersion: "1.0.1"
+provider:
+  organization: Example Org
+  url: https://example.com
+capabilities:
+  streaming: true
+securitySchemes:
+  bearer:
+    httpAuthSecurityScheme:
+      scheme: Bearer
+securityRequirements:
+  - schemes:
+      oauth:
+        list:
+          - recipes.read
+defaultInputModes:
+  - text/plain
+defaultOutputModes:
+  - text/plain
+  - application/json
+skills:
+  - id: recipe-search
+    name: Recipe search
+    description: Finds recipes by ingredient or cuisine.
+    tags:
+      - cooking
+    examples:
+      - Find me a vegetarian lasagne recipe
+  - id: recipe-search
+    name: Meal planner
+    description: Plans a week of meals.
+    tags:
+      - cooking
+    examples:
+      - Plan five dinners under 30 minutes
+====asset:ruleset====
+const { a2a } = require('@stoplight/spectral-rulesets');
+module.exports = a2a;
+====command====
+{bin} lint {document} --ruleset "{asset:ruleset}"
+====status====
+1
+====stdout====
+{document}
+  8:10  warning  a2a-https-urls                     "url" should use an encrypted transport (https:// or wss://), not "http://agent.example.com/a2a/rest".  supportedInterfaces[1].url
+ 10:22  warning  a2a-protocol-version               Protocol version should be "Major.Minor" ("1.0"); patch versions should not be used.                    supportedInterfaces[1].protocolVersion
+ 22:13    error  a2a-security-requirements-defined  Security scheme "oauth" is not defined in "securitySchemes".                                            securityRequirements[0].schemes.oauth
+  38:9    error  a2a-skill-id-unique                "id" must be unique across all skills. "recipe-search" is duplicated.                                   skills[1].id
+
+✖ 4 problems (2 errors, 2 warnings, 0 infos, 0 hints)

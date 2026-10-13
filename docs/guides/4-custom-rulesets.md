@@ -1,6 +1,6 @@
 # Rulesets
 
-Spectral comes with four rulesets built-in: [OpenAPI](../reference/openapi-rules.md), [AsyncAPI](../reference/asyncapi-rules.md), [Arazzo](../reference/arazzo-rules.md), and [MCP](../reference/mcp-rules.md). They're good starting points, but the true power of Spectral comes with customizing and creating a ruleset that fits your project or organization. Creating a ruleset can help you and your team improve your API design and API development process, and help you create better APIs.
+Spectral comes with five rulesets built-in: [OpenAPI](../reference/openapi-rules.md), [AsyncAPI](../reference/asyncapi-rules.md), [Arazzo](../reference/arazzo-rules.md), [MCP](../reference/mcp-rules.md), and [A2A Agent Card](../reference/a2a-rules.md). They're good starting points, but the true power of Spectral comes with customizing and creating a ruleset that fits your project or organization. Creating a ruleset can help you and your team improve your API design and API development process, and help you create better APIs.
 
 Let's look through the keywords that make up a ruleset, so you can learn how to tweak a distributed ruleset to work for you, or make your own ruleset from scratch to power your organizations [API Style Guide](https://stoplight.io/api-style-guides-guidelines-and-best-practices/?utm_source=github&utm_medium=spectral&utm_campaign=docs).
 
@@ -25,6 +25,9 @@ Formats are an optional way to specify which API description formats a rule, or 
 - `arazzo1_0` (Arazzo v1.0.x)
 - `arazzo1_1` (Arazzo v1.1.x)
 - `arazzo1_2` (Arazzo v1.2.x, work in progress)
+- `a2aAgentCard` (A2A Agent Card, any version)
+- `a2aAgentCard0_3` (A2A Agent Card v0.3.x)
+- `a2aAgentCard1_0` (A2A Agent Card v1.0.x)
 - `aas2` (AsyncAPI v2.x)
 - `aas2_0` (AsyncAPI v2.0.0)
 - `aas2_1` (AsyncAPI v2.1.0)

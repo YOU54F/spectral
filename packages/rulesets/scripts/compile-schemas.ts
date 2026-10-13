@@ -10,6 +10,7 @@ import ajvFormats from 'ajv-formats';
 import chalk from 'chalk';
 import { minify } from 'terser';
 import { sync } from 'gzip-size';
+import { compileA2aSchemas } from './compile-a2a-schemas';
 
 const cwd = path.join(__dirname, '../src');
 
@@ -101,6 +102,8 @@ Promise.all(schemas)
     );
 
     await fs.promises.writeFile(path.join(arazzoTarget, '..', basename), ['// @ts-nocheck', minified].join('\n'));
+
+    await compileA2aSchemas(cwd, log);
   })
   .then(compileMcpValidators)
   .then(() => {

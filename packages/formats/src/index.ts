@@ -3,3 +3,4 @@ export * from './asyncapi';
 export * from './jsonSchema';
 export * from './arazzo';
 export * from './mcp';
+export * from './a2a';
