@@ -4,14 +4,15 @@ import { httpAndFileResolver } from '@stoplight/spectral-ref-resolver';
 import oasRuleset from '../../oas/index';
 import aasRuleset from '../../asyncapi/index';
 import arazzoRuleset from '../../arazzo/index';
+import avroRuleset from '../../avro/index';
 
-type Ruleset = typeof oasRuleset & typeof aasRuleset;
+type Ruleset = typeof oasRuleset & typeof aasRuleset & typeof avroRuleset;
 export type RuleName = keyof Ruleset['rules'];
 
 type Scenario = ReadonlyArray<
   Readonly<{
     name: string;
-    document: Record<string, unknown> | Document<any, any>;
+    document: Record<string, unknown> | unknown[] | string | Document<any, any>;
     errors: ReadonlyArray<Partial<IRuleResult>>;
     mocks?: Record<string, Record<string, unknown>>;
   }>
@@ -45,6 +46,7 @@ export function createWithRules(rules: (keyof Ruleset['rules'])[]): Spectral {
       [aasRuleset as RulesetDefinition, 'off'],
       [oasRuleset as RulesetDefinition, 'off'],
       [arazzoRuleset as RulesetDefinition, 'off'],
+      [avroRuleset, 'off'],
     ],
     rules: rules.reduce((obj, name) => {
       obj[name] = true;

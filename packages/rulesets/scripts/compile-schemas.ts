@@ -97,6 +97,7 @@ Promise.all(schemas)
 
     await fs.promises.writeFile(path.join(arazzoTarget, '..', basename), ['// @ts-nocheck', minified].join('\n'));
   })
+  .then(() => compileAvroSchemas())
   .then(() => {
     log(chalk.green('Validators generated.'));
   })
@@ -104,3 +105,52 @@ Promise.all(schemas)
     console.error(chalk.red('Error generating validators %s'), e.message);
     process.exit(1);
   });
+
+// Avro gets its own, standalone validator module so that it does not bundle the (large) OpenAPI/Arazzo schemas.
+async function compileAvroSchemas(): Promise<void> {
+  const schema = JSON.parse(
+    await fs.promises.readFile(path.join(cwd, 'avro/schemas/avro/v1.12/index.json'), 'utf8'),
+  ) as Record<string, unknown>;
+
+  const ajv = new Ajv2020({
+    schemas: [schema],
+    allErrors: true,
+    messages: true,
+    strict: false,
+    inlineRefs: false,
+    code: {
+      esm: true,
+      source: true,
+    },
+  });
+
+  ajvErrors(ajv);
+
+  const target = path.join(cwd, 'avro/schemas/validators.ts');
+  const code = standaloneCode(ajv, {
+    avro1: 'https://stoplight.io/spectral/schemas/avro/1.12/schema.json',
+  });
+
+  const minified = (
+    await minify(code, {
+      compress: {
+        passes: 2,
+      },
+      ecma: 2020,
+      module: true,
+      format: {
+        comments: false,
+      },
+    })
+  ).code as string;
+
+  log(
+    'writing %s size is %dKB (original), %dKB (minified) %dKB (minified + gzipped)',
+    target,
+    Math.round((code.length / 1024) * 100) / 100,
+    Math.round((minified.length / 1024) * 100) / 100,
+    Math.round((sync(minified) / 1024) * 100) / 100,
+  );
+
+  await fs.promises.writeFile(target, ['// @ts-nocheck', minified].join('\n'));
+}

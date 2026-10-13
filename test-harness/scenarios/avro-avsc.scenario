@@ -1,0 +1,32 @@
+====test====
+Lint an Avro schema (.avsc) with the built-in Avro ruleset
+====asset:user.avsc====
+{
+  "type": "record",
+  "name": "User",
+  "namespace": "com.example",
+  "fields": [
+    { "name": "id", "type": { "type": "string", "logicalType": "uuid" } },
+    { "name": "age", "type": "int", "default": "unknown" },
+    { "name": "email", "type": ["string", "null"] },
+    { "name": "address", "type": "Address" },
+    { "name": "status", "type": { "type": "enum", "name": "Status", "symbols": ["ACTIVE", "ACTIVE"] } },
+    { "name": "createdAt", "type": { "type": "int", "logicalType": "timestamp-millis" } }
+  ]
+}
+====asset:ruleset====
+const { avro } = require('@stoplight/spectral-rulesets');
+module.exports = avro;
+====command====
+{bin} lint {asset:user.avsc} --ruleset "{asset:ruleset}"
+====status====
+1
+====stdout====
+{asset:user.avsc}
+  7:48    error  avro-field-default-valid          Default value of field "age" does not match its type (int).                                 fields[1].default
+  8:43  warning  avro-optional-field-null-default  Optional field "email" should list "null" as the first member of its union.                 fields[2].type[1]
+  9:34    error  avro-type-reference-resolved      Type "Address" is not defined (looked up as "com.example.Address" and "Address").           fields[3].type
+ 10:91    error  avro-enum-symbols-valid           Enum symbol "ACTIVE" is duplicated in enum "com.example.Status".                            fields[4].type.symbols[1]
+ 11:68  warning  avro-logical-type-valid           Logical type "timestamp-millis" must annotate "long"; Avro implementations will ignore it.  fields[5].type.logicalType
+
+✖ 5 problems (3 errors, 2 warnings, 0 infos, 0 hints)
