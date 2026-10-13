@@ -43,4 +43,11 @@ describe('Overlay format', () => {
   it.each(invalidDocuments)('overlay1 does not recognize invalid document %o', document => {
     expect(overlay1(document, null)).toBe(false);
   });
+
+  it('declares action update values as unresolved paths', () => {
+    expect(overlay1_0.unresolvedPaths).toEqual(['$.actions[*].update']);
+    expect(overlay1_1.unresolvedPaths).toEqual(['$.actions[*].update']);
+    expect(overlay1_2.unresolvedPaths).toEqual(['$.actions[*].update', '$.components.actions[*].fields.update']);
+    expect(overlay1.unresolvedPaths).toEqual(overlay1_2.unresolvedPaths);
+  });
 });
