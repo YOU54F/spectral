@@ -3,7 +3,7 @@ import type { IFunctionResult } from '@stoplight/spectral-core';
 import { isObject } from './utils/isObject';
 import { createRulesetFunction } from '@stoplight/spectral-core';
 
-const pathRegex = /(\{;?\??[a-zA-Z0-9_-]+\*?\})/g;
+const pathRegex = /(\{;?\??[a-zA-Z0-9_.-]+\*?\})/g;
 
 interface IParam {
   in?: string;
