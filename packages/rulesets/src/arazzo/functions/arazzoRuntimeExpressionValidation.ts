@@ -93,7 +93,9 @@ function validateInputsExpression(
   arazzoSpec: ArazzoSpecification,
   currentWorkflowIndex?: number,
 ): boolean {
-  const inputsRegex = /^\$inputs\.([A-Za-z0-9_\\-]+)$/;
+  // The first segment identifies the workflow input; any remaining path (e.g. `.nested.prop`, `[0]` or a
+  // JSON Pointer fragment `#/nested/prop`) references into that input's value.
+  const inputsRegex = /^\$inputs\.([A-Za-z0-9_\\-]+)(?:\.[A-Za-z0-9_\\-]+|\[\d+\])*(?:#\/.*)?$/;
   const match = inputsRegex.exec(inputsExpression);
 
   if (!match) {
