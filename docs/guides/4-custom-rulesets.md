@@ -1,6 +1,6 @@
 # Rulesets
 
-Spectral comes with three rulesets built-in: [OpenAPI](../reference/openapi-rules.md), [AsyncAPI](../reference/asyncapi-rules.md), and [Arazzo](../reference/arazzo-rules.md). They're good starting points, but the true power of Spectral comes with customizing and creating a ruleset that fits your project or organization. Creating a ruleset can help you and your team improve your API design and API development process, and help you create better APIs.
+Spectral comes with four rulesets built-in: [OpenAPI](../reference/openapi-rules.md), [AsyncAPI](../reference/asyncapi-rules.md), [Arazzo](../reference/arazzo-rules.md), and [Apache Avro](../reference/avro-rules.md). They're good starting points, but the true power of Spectral comes with customizing and creating a ruleset that fits your project or organization. Creating a ruleset can help you and your team improve your API design and API development process, and help you create better APIs.
 
 Let's look through the keywords that make up a ruleset, so you can learn how to tweak a distributed ruleset to work for you, or make your own ruleset from scratch to power your organizations [API Style Guide](https://stoplight.io/api-style-guides-guidelines-and-best-practices/?utm_source=github&utm_medium=spectral&utm_campaign=docs).
 
@@ -34,6 +34,7 @@ Formats are an optional way to specify which API description formats a rule, or 
 - `aas3` (AsyncAPI v3.x)
 - `aas3_0` (AsyncAPI v3.0.0)
 - `aas3_1` (AsyncAPI v3.1.x)
+- `avro1` (Apache Avro 1.x schema declarations, e.g. `.avsc` files)
 - `oas2` (OpenAPI v2.0)
 - `oas3` (OpenAPI v3.x)
 - `oas3_0` (OpenAPI v3.0.x)

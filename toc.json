@@ -40,6 +40,11 @@
       "uri": "/docs/getting-started/5-asyncapi.md"
     },
     {
+      "type": "item",
+      "title": "Avro Support",
+      "uri": "/docs/getting-started/7-avro.md"
+    },
+    {
       "type": "divider",
       "title": "guides"
     },
@@ -151,6 +156,11 @@
       "type": "item",
       "title": "AsyncAPI Rules",
       "uri": "/docs/reference/asyncapi-rules.md"
+    },
+    {
+      "type": "item",
+      "title": "Avro Rules",
+      "uri": "/docs/reference/avro-rules.md"
     },
     {
       "type": "item",
