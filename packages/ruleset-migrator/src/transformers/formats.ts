@@ -16,6 +16,7 @@ const FORMATS = [
   'arazzo1.0',
   'asyncapi2',
   'asyncapi3',
+  'avro1',
   'json-schema',
   'json-schema-loose',
   'json-schema-draft4',
