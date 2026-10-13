@@ -13,7 +13,7 @@ export default function arazzoStepParametersValidation(target: ArazzoSpecificati
       workflow.steps.forEach((step, stepIndex) => {
         if (!step.parameters) return;
 
-        const { workflowId, operationId, operationPath, channelPath } = step;
+        const { workflowId, operationId, operationPath, channelPath, operationName } = step;
         const stepParams = getAllParameters(step, workflow, target);
 
         if (Array.isArray(stepParams)) {
@@ -76,7 +76,10 @@ export default function arazzoStepParametersValidation(target: ArazzoSpecificati
         }
 
         // if operationId, operationPath or channelPath (Arazzo 1.1) is present, all parameters should have an `in` field
-        if ((operationId != null || operationPath != null || channelPath != null) && noInField) {
+        if (
+          (operationId != null || operationPath != null || channelPath != null || operationName != null) &&
+          noInField
+        ) {
           results.push({
             message: `Step with "operationId" or "operationPath" must have parameters with an "in" field.`,
             path: ['workflows', workflowIndex, 'steps', stepIndex, 'parameters'],

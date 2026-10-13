@@ -1,0 +1,185 @@
+arazzo: 1.2.0
+info:
+  title: Petstore checkout with pay later
+  summary: Find a pet, order it, pay in instalments if affordable, then track delivery.
+  description: |
+    Crosses five protocols: GraphQL (storefront), REST (orders and payments),
+    SOAP (legacy credit bureau), gRPC (affordability scoring) and Kafka (delivery events).
+  version: 0.1.0
+
+sourceDescriptions:
+  - name: petstore
+    url: ./sources/petstore.openapi.yaml
+    type: openapi
+  - name: deliveryEvents
+    url: ./sources/delivery.asyncapi.yaml
+    type: asyncapi
+  - name: storefront
+    url: ./storefront.arazzo.yaml
+    type: arazzo
+  - name: creditBureau
+    url: ./credit-bureau.arazzo.yaml
+    type: arazzo
+  - name: affordability
+    url: ./affordability.arazzo.yaml
+    type: arazzo
+
+workflows:
+  - workflowId: adoptWithPayLater
+    summary: Adopt a pet and pay in instalments, falling back to card if declined.
+    inputs:
+      $ref: '#/components/inputs/checkout'
+    steps:
+      # GraphQL, via the storefront team's workflow
+      - stepId: findPet
+        workflowId: $sourceDescriptions.storefront.findAvailablePet
+        parameters:
+          - name: species
+            value: $inputs.species
+        outputs:
+          petId: $outputs.petId
+          price: $outputs.price
+
+      # REST
+      - stepId: createOrder
+        operationId: $sourceDescriptions.petstore.createOrder
+        parameters:
+          - reference: $components.parameters.authorization
+        requestBody:
+          contentType: application/json
+          payload:
+            customerId: $inputs.customerId
+            items:
+              - petId: $steps.findPet.outputs.petId
+                quantity: 1
+            deliveryAddress:
+              postcode: $inputs.postcode
+        successCriteria:
+          - condition: $statusCode == 201
+        onFailure:
+          - reference: $components.failureActions.retryWhenBusy
+        outputs:
+          orderId: $response.body#/id
+          total: $response.body#/total
+
+      # SOAP, via the credit bureau integration workflow (virtualised by ReadyAPI in the demo)
+      - stepId: checkCreditFile
+        workflowId: $sourceDescriptions.creditBureau.getCreditScore
+        parameters:
+          - name: customerId
+            value: $inputs.customerId
+        outputs:
+          bureauScore: $outputs.score
+
+      # gRPC, via the risk team's workflow
+      - stepId: assessAffordability
+        workflowId: $sourceDescriptions.affordability.assess
+        parameters:
+          - name: customerId
+            value: $inputs.customerId
+          - name: orderTotal
+            value: $steps.createOrder.outputs.total
+          - name: bureauScore
+            value: $steps.checkCreditFile.outputs.bureauScore
+        outputs:
+          decision: $outputs.decision
+          instalments: $outputs.instalments
+        onSuccess:
+          - name: declined
+            type: goto
+            stepId: payByCard
+            criteria:
+              - condition: $steps.assessAffordability.outputs.decision != 'DECISION_APPROVED'
+
+      # REST
+      - stepId: createPayLaterPlan
+        operationId: $sourceDescriptions.petstore.createPayLaterPlan
+        parameters:
+          - name: orderId
+            in: path
+            value: $steps.createOrder.outputs.orderId
+          - reference: $components.parameters.authorization
+        requestBody:
+          contentType: application/json
+          payload:
+            instalments: $steps.assessAffordability.outputs.instalments
+        successCriteria:
+          - condition: $statusCode == 201
+        outputs:
+          planId: $response.body#/id
+        onSuccess:
+          - name: planCreated
+            type: goto
+            stepId: awaitDispatch
+
+      # REST, only reached when pay later is declined
+      - stepId: payByCard
+        operationId: $sourceDescriptions.petstore.createCardPayment
+        parameters:
+          - name: orderId
+            in: path
+            value: $steps.createOrder.outputs.orderId
+          - reference: $components.parameters.authorization
+        requestBody:
+          contentType: application/json
+          payload:
+            paymentToken: $inputs.cardToken
+        successCriteria:
+          - condition: $statusCode == 201
+
+      # Kafka: wait for the delivery service to dispatch the order
+      - stepId: awaitDispatch
+        operationId: $sourceDescriptions.deliveryEvents.onDeliveryDispatched
+        action: receive
+        correlationId: $steps.createOrder.outputs.orderId
+        timeout: 30000
+        successCriteria:
+          - condition: $message.payload#/status == 'DISPATCHED'
+        outputs:
+          trackingId: $message.payload#/trackingId
+
+      # GraphQL subscription, via the storefront team's workflow
+      - stepId: trackDelivery
+        workflowId: $sourceDescriptions.storefront.trackDelivery
+        parameters:
+          - name: orderId
+            value: $steps.createOrder.outputs.orderId
+        outputs:
+          deliveredAt: $outputs.deliveredAt
+
+    outputs:
+      orderId: $steps.createOrder.outputs.orderId
+      trackingId: $steps.awaitDispatch.outputs.trackingId
+      deliveredAt: $steps.trackDelivery.outputs.deliveredAt
+
+components:
+  inputs:
+    checkout:
+      type: object
+      required: [accessToken, customerId, species, postcode, cardToken]
+      properties:
+        accessToken:
+          type: string
+        customerId:
+          type: string
+        species:
+          type: string
+          examples: [cat]
+        postcode:
+          type: string
+        cardToken:
+          type: string
+          description: Fallback payment token if pay later is declined.
+  parameters:
+    authorization:
+      name: Authorization
+      in: header
+      value: Bearer {$inputs.accessToken}
+  failureActions:
+    retryWhenBusy:
+      name: retryWhenBusy
+      type: retry
+      retryAfter: 1
+      retryLimit: 3
+      criteria:
+        - condition: $statusCode == 503

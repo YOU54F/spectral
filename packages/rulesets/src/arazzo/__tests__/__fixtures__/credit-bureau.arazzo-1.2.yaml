@@ -1,0 +1,55 @@
+arazzo: 1.2.0
+info:
+  title: Credit bureau workflows
+  version: 0.1.0
+
+sourceDescriptions:
+  - name: bureau
+    url: ./sources/credit-bureau.wsdl
+    type: wsdl
+
+workflows:
+  - workflowId: getCreditScore
+    summary: Fetch a customer's credit score from the bureau.
+    inputs:
+      type: object
+      required: [customerId]
+      properties:
+        customerId:
+          type: string
+    steps:
+      - stepId: getCreditReport
+        operationName: $sourceDescriptions.bureau.GetCreditReport
+        parameters:
+          - name: Content-Type
+            in: header
+            value: text/xml; charset=utf-8
+          - name: SOAPAction
+            in: header
+            value: urn:petstore:bureau/GetCreditReport
+        requestBody:
+          contentType: text/xml
+          payload: |
+            <?xml version="1.0" encoding="UTF-8"?>
+            <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+                           xmlns:b="urn:petstore:bureau">
+              <soap:Body>
+                <b:GetCreditReport>
+                  <b:CustomerId>{$inputs.customerId}</b:CustomerId>
+                </b:GetCreditReport>
+              </soap:Body>
+            </soap:Envelope>
+        successCriteria:
+          - condition: $statusCode == 200
+          - context: $response.body
+            condition: not(//*[local-name()='Fault'])
+            type:
+              type: xpath
+              version: xpath-31
+        outputs:
+          score:
+            context: $response.body
+            selector: //*[local-name()='Score']
+            type: xpath
+    outputs:
+      score: $steps.getCreditReport.outputs.score
