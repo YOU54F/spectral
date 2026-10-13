@@ -11,6 +11,8 @@ export const AVRO_SCHEMA_FORMAT = /^application\/vnd\.apache\.avro(\+(json|yaml)
 export type Options = {
   /** Property holding the schema next to `schemaFormat`: `payload` for AsyncAPI 2.x messages, `schema` for AsyncAPI 3.x Multi Format Schema Objects. */
   schemaField: 'payload' | 'schema';
+  /** Which checks to run. Logical-type problems are reported by a separate warning rule. Defaults to `structure`. */
+  checks?: 'structure' | 'logicalTypes';
 };
 
 export default createRulesetFunction<unknown, Options>(
@@ -22,18 +24,21 @@ export default createRulesetFunction<unknown, Options>(
         schemaField: {
           enum: ['payload', 'schema'],
         },
+        checks: {
+          enum: ['structure', 'logicalTypes'],
+        },
       },
       required: ['schemaField'],
       additionalProperties: false,
     },
   },
-  function asyncApiAvroPayloadValidation(targetVal, { schemaField }, context) {
+  function asyncApiAvroPayloadValidation(targetVal, { schemaField, checks = 'structure' }, context) {
     if (!isPlainObject(targetVal)) return;
 
     const { schemaFormat } = targetVal;
     if (typeof schemaFormat !== 'string' || !AVRO_SCHEMA_FORMAT.test(schemaFormat)) return;
     if (!(schemaField in targetVal)) return;
 
-    return lintAvroSchema(targetVal[schemaField], [...context.path, schemaField], context);
+    return lintAvroSchema(targetVal[schemaField], [...context.path, schemaField], context, checks);
   },
 );

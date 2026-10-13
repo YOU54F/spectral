@@ -458,6 +458,21 @@ export default {
         },
       },
     },
+    'asyncapi-payload-avro-logical-type': {
+      description: 'Avro payload logical types should be well-formed.',
+      message: '{{error}}',
+      severity: 'warn',
+      recommended: true,
+      formats: [aas2],
+      given: ['$.components.messageTraits.*', '$.components.messages.*', '$.channels[*][publish,subscribe].message'],
+      then: {
+        function: asyncApiAvroPayloadValidation,
+        functionOptions: {
+          schemaField: 'payload',
+          checks: 'logicalTypes',
+        },
+      },
+    },
     'asyncapi-payload-avro': {
       description: 'Avro payloads must be valid Avro schemas.',
       message: '{{error}}',
@@ -469,6 +484,21 @@ export default {
         function: asyncApiAvroPayloadValidation,
         functionOptions: {
           schemaField: 'payload',
+        },
+      },
+    },
+    'asyncapi-3-payload-avro-logical-type': {
+      description: 'Avro payload logical types should be well-formed.',
+      message: '{{error}}',
+      severity: 'warn',
+      recommended: true,
+      formats: [aas3],
+      given: ['$.components.messages.*.payload', '$.channels.*.messages.*.payload'],
+      then: {
+        function: asyncApiAvroPayloadValidation,
+        functionOptions: {
+          schemaField: 'schema',
+          checks: 'logicalTypes',
         },
       },
     },

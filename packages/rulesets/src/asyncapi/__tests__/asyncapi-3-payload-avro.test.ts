@@ -73,12 +73,6 @@ testRule('asyncapi-3-payload-avro', [
         path: ['components', 'messages', 'aMessage', 'payload', 'schema', 'fields', '1', 'name'],
         severity: DiagnosticSeverity.Error,
       },
-      {
-        message:
-          'Logical type "decimal" "scale" (5) must not be greater than "precision" (2); Avro implementations will ignore it.',
-        path: ['components', 'messages', 'aMessage', 'payload', 'schema', 'fields', '2', 'type', 'logicalType'],
-        severity: DiagnosticSeverity.Error,
-      },
     ],
   },
   {
