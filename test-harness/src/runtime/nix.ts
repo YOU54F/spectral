@@ -33,6 +33,21 @@ function stringifyStream(stream: Transform): Promise<string> {
   });
 }
 
+// Scenarios run with only their own env, but behind a TLS-intercepting proxy the CLI still needs to trust its CA.
+const INHERITED_ENV = ['NODE_EXTRA_CA_CERTS', 'SSL_CERT_FILE', 'SSL_CERT_DIR'];
+
+function inheritedEnv(): Record<string, string> {
+  const env: Record<string, string> = {};
+  for (const key of INHERITED_ENV) {
+    const value = process.env[key];
+    if (value !== void 0) {
+      env[key] = value;
+    }
+  }
+
+  return env;
+}
+
 export const spawnNode: SpawnFn = async (script, env, cwd) => {
   const stderr = createStream();
   const stdout = createStream();
@@ -40,7 +55,7 @@ export const spawnNode: SpawnFn = async (script, env, cwd) => {
   const handle = child_process.spawn(script, [], {
     shell: true,
     windowsVerbatimArguments: false,
-    env,
+    env: { ...inheritedEnv(), ...env },
     cwd,
     stdio: 'pipe',
   });
