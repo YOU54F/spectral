@@ -71,7 +71,8 @@ jobs:
     - name: Cached dependencies
       uses: "./.github/actions/cached-dependencies"
     - name: Setup Chrome
-      uses: browser-actions/setup-chrome@v1.2.0
+      uses: browser-actions/setup-chrome@v2.2.0
+      id: setup-chrome
     - name: Install chrome dependencies
       run: yarn add -D karma-chrome-launcher
     - name: Build
@@ -82,6 +83,7 @@ jobs:
       run: yarn test.karma
       env:
         CI: true
+        CHROME_BIN: ${{ steps.setup-chrome.outputs.chrome-path }}
   lint:
     runs-on: ubuntu-latest
     container:
@@ -109,7 +111,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v5.0.1
-    - uses: sourcemeta/jsonschema@v7.0.2
+    - uses: sourcemeta/jsonschema@v7.2.3
     - run: jsonschema metaschema --verbose packages/core/src/ruleset/meta/*.json
     - run: jsonschema lint --verbose packages/core/src/ruleset/meta/*.json
 
