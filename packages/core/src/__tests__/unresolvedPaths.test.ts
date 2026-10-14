@@ -11,6 +11,8 @@ fragmentFormat.unresolvedPaths = ['$.fragments[*].value'];
 
 const plainFormat: Format = () => true;
 
+type TransformRef = NonNullable<NonNullable<ConstructorParameters<typeof Resolver>[0]>['transformRef']>;
+
 const input = {
   fragments: [
     { value: { $ref: '#/components/schemas/Pet' } },
@@ -95,15 +97,15 @@ describe('Format.unresolvedPaths', () => {
   });
 
   it('keeps calling the transformRef of a custom resolver for other $refs', async () => {
-    const transformRef = jest.fn(({ ref }: { ref?: unknown }) => ref);
+    const transformRef = jest.fn<ReturnType<TransformRef>, Parameters<TransformRef>>(({ ref }) => ref);
     const resolver = new Resolver({ transformRef });
 
     await createSpectral([fragmentFormat], resolver).run(JSON.stringify(input));
 
-    expect(transformRef.mock.calls.map(([{ jsonPointer }]) => jsonPointer as string)).toEqual(
+    expect(transformRef.mock.calls.map(([{ jsonPointer }]) => jsonPointer)).toEqual(
       expect.arrayContaining(['#/fragments/2/other', '#/local']),
     );
-    expect(transformRef.mock.calls.map(([{ jsonPointer }]) => jsonPointer as string)).not.toEqual(
+    expect(transformRef.mock.calls.map(([{ jsonPointer }]) => jsonPointer)).not.toEqual(
       expect.arrayContaining(['#/fragments/0/value']),
     );
   });
