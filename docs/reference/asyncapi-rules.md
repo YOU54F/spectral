@@ -550,13 +550,57 @@ application/vnd.aai.asyncapi;version=2.0.0
 application/vnd.aai.asyncapi+json;version=2.0.0
 application/vnd.aai.asyncapi+yaml;version=2.0.0
 
-At this point, explicitly setting `schemaFormat` is not supported by Spectral, so if you use it this rule will emit an info message and skip validating the payload.
+Apart from Avro (see [asyncapi-payload-avro](#asyncapi-payload-avro)), explicitly setting `schemaFormat` is not supported by Spectral, so if you use another format this rule will emit an info message and skip validating the payload.
 
-Other formats such as OpenAPI Schema Object, JSON Schema Draft 07, and Avro will be added in various upcoming versions.
+Other formats such as OpenAPI Schema Object and JSON Schema Draft 07 will be added in various upcoming versions.
 
 **Recommended:** Yes
 
 **Default severity when enabled:** info
+
+### asyncapi-payload-avro
+
+Avro payloads must be valid Avro schemas. A payload is treated as Avro when the message's `schemaFormat` is an Avro schema format: `application/vnd.apache.avro;version=1.9.0`, the `+json` and `+yaml` variants, or other `1.x` versions such as `1.8.2`.
+
+The payload is checked with the structural schema and the semantic checks from the [Avro ruleset](avro-rules.md): names, name and field name uniqueness, type references, field defaults, enum symbols, unions and logical types. Problems are reported at their location inside the payload, using the same messages as the matching `avro-*` rules. Unlike in `spectral:avro`, invalid logical types are reported as errors here.
+
+**Recommended:** Yes
+
+**Bad Example**
+
+```yaml
+components:
+  messages:
+    userSignedUp:
+      schemaFormat: application/vnd.apache.avro;version=1.9.0
+      payload:
+        type: record
+        name: UserSignedUp
+        fields:
+          - name: userId
+            type: string
+            default: 1 # Default doesn't match the field type
+          - name: address
+            type: com.example.Address # Type isn't defined
+```
+
+**Good Example**
+
+```yaml
+components:
+  messages:
+    userSignedUp:
+      schemaFormat: application/vnd.apache.avro;version=1.9.0
+      payload:
+        type: record
+        name: UserSignedUp
+        fields:
+          - name: userId
+            type: string
+          - name: email
+            type: ["null", "string"]
+            default: null
+```
 
 ### asyncapi-payload
 
@@ -830,13 +874,55 @@ application/vnd.aai.asyncapi;version=2.0.0
 application/vnd.aai.asyncapi+json;version=2.0.0
 application/vnd.aai.asyncapi+yaml;version=2.0.0
 
-At this point, explicitly setting `schemaFormat` is not supported by Spectral, so if you use it this rule will emit an info message and skip validating the payload.
+Apart from Avro (see [asyncapi-3-payload-avro](#asyncapi-3-payload-avro)), explicitly setting `schemaFormat` is not supported by Spectral, so if you use another format this rule will emit an info message and skip validating the payload.
 
-Other formats such as OpenAPI Schema Object, JSON Schema Draft 07, and Avro will be added in various upcoming versions.
+Other formats such as OpenAPI Schema Object and JSON Schema Draft 07 will be added in various upcoming versions.
 
 **Recommended:** Yes
 
 **Default severity when enabled:** info
+
+### asyncapi-3-payload-avro
+
+Avro payloads must be valid Avro schemas. A payload is treated as Avro when the Multi Format Schema Object's `schemaFormat` is an Avro schema format: `application/vnd.apache.avro;version=1.9.0`, the `+json` and `+yaml` variants, or other `1.x` versions such as `1.8.2`.
+
+The payload is checked with the structural schema and the semantic checks from the [Avro ruleset](avro-rules.md): names, name and field name uniqueness, type references, field defaults, enum symbols, unions and logical types. Problems are reported at their location inside the payload, using the same messages as the matching `avro-*` rules. Unlike in `spectral:avro`, invalid logical types are reported as errors here.
+
+**Recommended:** Yes
+
+**Bad Example**
+
+```yaml
+components:
+  messages:
+    userSignedUp:
+      payload:
+        schemaFormat: application/vnd.apache.avro;version=1.9.0
+        schema:
+          type: record
+          name: UserSignedUp
+          fields:
+            - name: userId
+              type: string
+            - name: userId # Duplicate field name
+              type: int
+```
+
+**Good Example**
+
+```yaml
+components:
+  messages:
+    userSignedUp:
+      payload:
+        schemaFormat: application/vnd.apache.avro;version=1.9.0
+        schema:
+          type: record
+          name: UserSignedUp
+          fields:
+            - name: userId
+              type: string
+```
 
 ### asyncapi-3-server-no-empty-variable
 

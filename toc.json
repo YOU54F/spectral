@@ -55,6 +55,11 @@
       "uri": "/docs/getting-started/10-openrpc.md"
     },
     {
+      "type": "item",
+      "title": "Avro Support",
+      "uri": "/docs/getting-started/11-avro.md"
+    },
+    {
       "type": "divider",
       "title": "guides"
     },
@@ -181,6 +186,11 @@
       "type": "item",
       "title": "OpenRPC Rules",
       "uri": "/docs/reference/openrpc-rules.md"
+    },
+    {
+      "type": "item",
+      "title": "Avro Rules",
+      "uri": "/docs/reference/avro-rules.md"
     },
     {
       "type": "item",

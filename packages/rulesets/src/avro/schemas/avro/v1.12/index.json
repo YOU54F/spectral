@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stoplight.io/spectral/schemas/avro/1.12/schema.json",
+  "title": "Apache Avro 1.12 schema declaration (unofficial)",
+  "description": "Structural JSON Schema for Apache Avro schema declarations (.avsc), written for Spectral. Apache Avro does not publish an official JSON Schema; this one is derived from https://avro.apache.org/docs/1.12.0/specification/ and only checks the shape of the document. Name grammar, name resolution, defaults, unions and logical types are validated by dedicated Spectral functions.",
+  "$ref": "#/$defs/schema",
+  "$defs": {
+    "schema": {
+      "type": ["string", "array", "object"],
+      "errorMessage": {
+        "type": "Avro schema must be a type name (string), a union (array) or a schema object"
+      },
+      "allOf": [
+        {
+          "if": { "type": "string" },
+          "then": { "$ref": "#/$defs/typeName" }
+        },
+        {
+          "if": { "type": "array" },
+          "then": { "$ref": "#/$defs/union" }
+        },
+        {
+          "if": { "type": "object" },
+          "then": { "$ref": "#/$defs/schemaObject" }
+        }
+      ]
+    },
+    "typeName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "union": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/schema" }
+    },
+    "names": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "schemaObject": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "logicalType": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["type"],
+            "properties": { "type": { "enum": ["record", "error"] } }
+          },
+          "then": { "$ref": "#/$defs/record" }
+        },
+        {
+          "if": {
+            "required": ["type"],
+            "properties": { "type": { "const": "enum" } }
+          },
+          "then": { "$ref": "#/$defs/enum" }
+        },
+        {
+          "if": {
+            "required": ["type"],
+            "properties": { "type": { "const": "array" } }
+          },
+          "then": { "$ref": "#/$defs/array" }
+        },
+        {
+          "if": {
+            "required": ["type"],
+            "properties": { "type": { "const": "map" } }
+          },
+          "then": { "$ref": "#/$defs/map" }
+        },
+        {
+          "if": {
+            "required": ["type"],
+            "properties": { "type": { "const": "fixed" } }
+          },
+          "then": { "$ref": "#/$defs/fixed" }
+        }
+      ]
+    },
+    "namedType": {
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string" },
+        "namespace": { "type": "string" },
+        "doc": { "type": "string" },
+        "aliases": { "$ref": "#/$defs/names" }
+      }
+    },
+    "record": {
+      "$ref": "#/$defs/namedType",
+      "required": ["fields"],
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/field" }
+        }
+      }
+    },
+    "field": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string" },
+        "doc": { "type": "string" },
+        "type": { "$ref": "#/$defs/schema" },
+        "order": { "enum": ["ascending", "descending", "ignore"] },
+        "aliases": { "$ref": "#/$defs/names" }
+      }
+    },
+    "enum": {
+      "$ref": "#/$defs/namedType",
+      "required": ["symbols"],
+      "properties": {
+        "symbols": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "default": { "type": "string" }
+      }
+    },
+    "array": {
+      "required": ["items"],
+      "properties": {
+        "items": { "$ref": "#/$defs/schema" },
+        "default": { "type": "array" }
+      }
+    },
+    "map": {
+      "required": ["values"],
+      "properties": {
+        "values": { "$ref": "#/$defs/schema" },
+        "default": { "type": "object" }
+      }
+    },
+    "fixed": {
+      "$ref": "#/$defs/namedType",
+      "required": ["size"],
+      "properties": {
+        "size": {
+          "type": "integer",
+          "minimum": 1,
+          "errorMessage": "\"size\" property must be a positive integer"
+        }
+      }
+    }
+  }
+}

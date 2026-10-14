@@ -16,6 +16,7 @@ export default tseslint.config(
       'packages/rulesets/src/a2a/schemas/validators.ts',
       'packages/rulesets/src/overlay/schemas/validators.ts',
       'packages/rulesets/src/openrpc/schemas/validators.ts',
+      'packages/rulesets/src/avro/schemas/validators.ts',
       'packages/*/CHANGELOG.md',
       'packages/formatters/src/html/templates.ts',
     ],

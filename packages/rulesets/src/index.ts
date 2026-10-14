@@ -5,5 +5,6 @@ import { default as mcp } from './mcp';
 import { default as a2a } from './a2a';
 import { default as overlay } from './overlay';
 import { default as openrpc } from './openrpc';
+import { default as avro } from './avro';
 
-export { oas, asyncapi, arazzo, mcp, a2a, overlay, openrpc };
+export { oas, asyncapi, arazzo, mcp, a2a, overlay, openrpc, avro };

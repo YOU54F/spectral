@@ -125,7 +125,7 @@ spectral.setRuleset(ruleset);
 ### Extend a Built-in Ruleset
 
 You can also pass a ruleset object directly to `setRuleset` and extend one of
-the published rulesets (`oas`, `asyncapi`, `arazzo`, `mcp`, `a2a`, `overlay`, or `openrpc`):
+the published rulesets (`oas`, `asyncapi`, `arazzo`, `mcp`, `a2a`, `overlay`, `openrpc`, or `avro`):
 
 ```ts lineNumbers
 import { Spectral, type RulesetDefinition } from "@stoplight/spectral-core";
@@ -141,7 +141,7 @@ spectral.setRuleset(ruleset);
 
 `oas` is an actual ruleset object rather than a ruleset name, so this works
 without the YAML loading or bundling path. The same pattern works for
-`asyncapi`, `arazzo`, `mcp`, `a2a`, `overlay` and `openrpc`.
+`asyncapi`, `arazzo`, `mcp`, `a2a`, `overlay`, `openrpc` and `avro`.
 
 ### Browser
 

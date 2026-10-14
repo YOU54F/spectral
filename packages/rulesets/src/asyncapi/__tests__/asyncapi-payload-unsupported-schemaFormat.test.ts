@@ -30,6 +30,19 @@ testRule('asyncapi-payload-unsupported-schemaFormat', [
     document,
     errors: [],
   },
+  ...[
+    'application/vnd.apache.avro;version=1.9.0',
+    'application/vnd.apache.avro+json;version=1.8.2',
+    'application/vnd.apache.avro+yaml;version=1.9.0',
+  ].map(schemaFormat => ({
+    name: `schemaFormat is set to Avro (${schemaFormat})`,
+    document: produce(document, (draft: any) => {
+      draft.components.messageTraits.aTrait.schemaFormat = schemaFormat;
+      draft.components.messages.aMessage.schemaFormat = schemaFormat;
+      draft.channels['users/{userId}/signedUp'].publish.message.schemaFormat = schemaFormat;
+    }),
+    errors: [],
+  })),
 
   {
     name: 'components.messages.{message}.schemaFormat is set to a non supported value',
@@ -38,7 +51,7 @@ testRule('asyncapi-payload-unsupported-schemaFormat', [
     }),
     errors: [
       {
-        message: 'Message schema validation is only supported with default unspecified "schemaFormat".',
+        message: 'Message schema validation is only supported with default unspecified "schemaFormat" or Avro.',
         path: ['components', 'messages', 'aMessage', 'schemaFormat'],
         severity: DiagnosticSeverity.Information,
       },
@@ -52,7 +65,7 @@ testRule('asyncapi-payload-unsupported-schemaFormat', [
     }),
     errors: [
       {
-        message: 'Message schema validation is only supported with default unspecified "schemaFormat".',
+        message: 'Message schema validation is only supported with default unspecified "schemaFormat" or Avro.',
         path: ['components', 'messageTraits', 'aTrait', 'schemaFormat'],
         severity: DiagnosticSeverity.Information,
       },
@@ -66,7 +79,7 @@ testRule('asyncapi-payload-unsupported-schemaFormat', [
     }),
     errors: [
       {
-        message: 'Message schema validation is only supported with default unspecified "schemaFormat".',
+        message: 'Message schema validation is only supported with default unspecified "schemaFormat" or Avro.',
         path: ['channels', 'users/{userId}/signedUp', property, 'message', 'schemaFormat'],
         severity: DiagnosticSeverity.Information,
       },

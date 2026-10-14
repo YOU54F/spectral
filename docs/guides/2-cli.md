@@ -67,6 +67,7 @@ Here you can build a [custom ruleset](../getting-started/3-rulesets.md), or exte
 - [A2A Agent Card ruleset](../reference/a2a-rules.md)
 - [OpenAPI Overlay ruleset](../reference/overlay-rules.md)
 - [OpenRPC ruleset](../reference/openrpc-rules.md)
+- [Avro ruleset](../reference/avro-rules.md)
 
 ## Error Results
 

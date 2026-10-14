@@ -22,6 +22,7 @@ const FORMATS = [
   'asyncapi3',
   'mcpServer',
   'openrpc1',
+  'avro1',
   'json-schema',
   'json-schema-loose',
   'json-schema-draft4',
