@@ -7,7 +7,7 @@ import { Document, IDocument, IParsedResult, isParsedResult, ParsedDocument } fr
 import { DocumentInventory } from './documentInventory';
 import { Runner } from './runner';
 import type { IConstructorOpts, IRunOpts, ISpectralDiagnostic, ISpectralFullResult } from './types';
-import type { Format, ParserOptions, RulesetDefinition } from './ruleset/index';
+import type { Format, FormatContext, ParserOptions, RulesetDefinition } from './ruleset/index';
 import { Ruleset } from './ruleset/ruleset';
 import { generateDocumentWideResult } from './utils/generateDocumentWideResult';
 import { getDiagnosticSeverity } from './ruleset';
@@ -75,7 +75,8 @@ export class Spectral {
     runner.results.push(...this._filterParserErrors(document.diagnostics, ruleset.parserOptions));
 
     if (document.formats === void 0) {
-      const foundFormats = [...ruleset.formats].filter(format => format(inventory.resolved, document.source));
+      const context: FormatContext = { parser: document instanceof Document ? document.parser : null };
+      const foundFormats = [...ruleset.formats].filter(format => format(inventory.resolved, document.source, context));
       if (foundFormats.length === 0 && opts.ignoreUnknownFormat !== true) {
         document.formats = null;
         if (ruleset.formats.size > 0) {

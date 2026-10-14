@@ -2,7 +2,7 @@ import * as path from '@stoplight/path';
 import { truthy } from '@stoplight/spectral-functions';
 import * as Parsers from '@stoplight/spectral-parsers';
 import * as fs from 'fs';
-import { Ruleset } from '../ruleset';
+import { Format, Ruleset } from '../ruleset';
 import { Spectral } from '../spectral';
 import { KeyValue } from './__fixtures__/parsers/kv-parser';
 
@@ -71,5 +71,50 @@ describe('Spectral parsers', () => {
         range: { start: { line: 1, character: 0 }, end: { line: 1, character: 5 } },
       }),
     ]);
+  });
+  describe('formats', () => {
+    const kv: Format = (_document, _source, context) => context?.parser === KeyValue;
+    kv.displayName = 'KV';
+
+    const ruleset = (): Ruleset =>
+      new Ruleset({
+        parsers: [{ parser: KeyValue, extensions: ['.kv'] }],
+        formats: [kv],
+        rules: { 'port-defined': { ...rules['port-defined'], formats: [kv] } },
+      });
+
+    it('passes the parser that produced the document to formats', async () => {
+      const spectral = new Spectral();
+      spectral.setRuleset(ruleset());
+
+      const document = spectral.createDocument('name=petstore\nport=\n', '/config.kv');
+
+      expect(await spectral.run(document)).toEqual([expect.objectContaining({ code: 'port-defined' })]);
+      expect(document.formats).toEqual(new Set([kv]));
+    });
+
+    it('does not match documents produced by other parsers', async () => {
+      const spectral = new Spectral();
+      spectral.setRuleset(ruleset());
+
+      expect(await spectral.run(spectral.createDocument('port: ""', '/config.yaml'))).toEqual([
+        expect.objectContaining({ code: 'unrecognized-format' }),
+      ]);
+    });
+
+    it('passes null when the parser is not known', async () => {
+      const format = jest.fn().mockReturnValue(true);
+      const spectral = new Spectral();
+      spectral.setRuleset(new Ruleset({ formats: [format], rules }));
+
+      await spectral.run({ port: '' });
+      expect(format).toHaveBeenLastCalledWith({ port: '' }, null, { parser: Parsers.Yaml });
+
+      await spectral.run({
+        parsed: Parsers.parseYaml('port: ""'),
+        getLocationForJsonPath: Parsers.Yaml.getLocationForJsonPath,
+      });
+      expect(format).toHaveBeenLastCalledWith({ port: '' }, null, { parser: null });
+    });
   });
 });

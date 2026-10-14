@@ -124,6 +124,32 @@ The parser is used both for the documents you lint and for the files they `$ref`
 
 `parsers` is not available in JSON/YAML rulesets.
 
+#### Matching Formats by Parser
+
+Formats get the parser that produced the document as `context.parser` in their third argument, so a format can match the documents a parser handles without sniffing their data. `context.parser` is `null` when Spectral does not know the parser, for example for documents passed to `spectral.run` already parsed.
+
+```js
+import { truthy } from "@stoplight/spectral-functions";
+import { graphql as graphqlParser } from "./graphql-parser.js";
+
+const graphql = (document, source, context) => context?.parser === graphqlParser;
+graphql.displayName = "GraphQL";
+
+export default {
+  parsers: [{ parser: graphqlParser, extensions: [".graphql", ".gql"] }],
+  formats: [graphql],
+  rules: {
+    "type-description": {
+      formats: [graphql],
+      given: "$.definitions[?(@.kind == 'ObjectTypeDefinition')]",
+      then: { field: "description", function: truthy },
+    },
+  },
+};
+```
+
+The comparison relies on object identity, so the format and the parser entry must use the same parser object.
+
 Next, publish the ruleset as an npm package, and then install that package as part of your API project and reference it in your Spectral ruleset as:
 
 ```
