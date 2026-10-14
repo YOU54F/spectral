@@ -37,7 +37,7 @@ jobs:
       image: node:lts
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5.0.1
+      uses: actions/checkout@v7
       with:
         ref: ${{ inputs.tag }}
     - name: Install sudo
@@ -83,7 +83,7 @@ jobs:
       image: node:lts
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5.0.1
+      uses: actions/checkout@v7
       with:
         ref: ${{ inputs.tag }}
     - name: Install sudo
@@ -127,7 +127,7 @@ jobs:
     needs: validate
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5.0.1
+      uses: actions/checkout@v7
       with:
         ref: ${{ inputs.tag }}
     - name: Cached dependencies
@@ -172,7 +172,7 @@ jobs:
     needs:
     - upload-artifacts
     steps:
-    - uses: actions/checkout@v5.0.1
+    - uses: actions/checkout@v7
       with:
         ref: ${{ inputs.tag }}
     - name: docker build
