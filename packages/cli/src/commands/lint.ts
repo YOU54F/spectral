@@ -148,6 +148,14 @@ const lintCommand: CommandModule = {
           description: 'path to custom json-ref-resolver instance',
           type: 'string',
         },
+        parser: {
+          description:
+            'path to a module exporting a custom parser entry for non-JSON/YAML documents, more than one can be provided by using multiple flags',
+          type: 'string',
+          coerce(values: string | string[]) {
+            return Array.isArray(values) ? values : [values];
+          },
+        },
         ruleset: {
           alias: 'r',
           description: 'path/URL to a ruleset file',
@@ -230,7 +238,7 @@ const lintCommand: CommandModule = {
         showDocumentationUrl,
         ruleset,
         stdinFilepath,
-        ...pick<Partial<ILintConfig>, keyof ILintConfig>(config, ['verbose', 'quiet', 'resolver']),
+        ...pick<Partial<ILintConfig>, keyof ILintConfig>(config, ['verbose', 'quiet', 'resolver', 'parser']),
       });
 
       if (displayOnlyFailures) {

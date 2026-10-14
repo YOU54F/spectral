@@ -7,7 +7,7 @@ import { Document, IDocument, IParsedResult, isParsedResult, ParsedDocument } fr
 import { DocumentInventory } from './documentInventory';
 import { Runner } from './runner';
 import type { IConstructorOpts, IRunOpts, ISpectralDiagnostic, ISpectralFullResult } from './types';
-import type { Format, ParserOptions, RulesetDefinition } from './ruleset/index';
+import type { Format, FormatContext, ParserOptions, RulesetDefinition } from './ruleset/index';
 import { Ruleset } from './ruleset/ruleset';
 import { generateDocumentWideResult } from './utils/generateDocumentWideResult';
 import { getDiagnosticSeverity } from './ruleset';
@@ -68,14 +68,15 @@ export class Spectral {
     const document = this.parseDocument(target);
 
     const candidateFormats = this.ruleset.formats;
+    const context: FormatContext = { parser: document instanceof Document ? document.parser : null };
 
     const inventory = new DocumentInventory(document, this._resolver, this.getParsers());
-    await inventory.resolve({ unresolvedPaths: this._getUnresolvedPaths(document, candidateFormats) });
+    await inventory.resolve({ unresolvedPaths: this._getUnresolvedPaths(document, candidateFormats, context) });
 
     let unrecognizedFormat = false;
 
     if (document.formats === void 0) {
-      const foundFormats = [...candidateFormats].filter(format => format(inventory.resolved, document.source));
+      const foundFormats = [...candidateFormats].filter(format => format(inventory.resolved, document.source, context));
       if (foundFormats.length === 0 && opts.ignoreUnknownFormat !== true) {
         document.formats = null;
         unrecognizedFormat = candidateFormats.size > 0;
@@ -117,7 +118,7 @@ export class Spectral {
   }
 
   // Only formats opting in via unresolvedPaths are considered, so documents of other formats are resolved as before.
-  private _getUnresolvedPaths(document: IDocument, formats: Iterable<Format>): string[] {
+  private _getUnresolvedPaths(document: IDocument, formats: Iterable<Format>, context: FormatContext): string[] {
     const unresolvedPaths: string[] = [];
     if (document.formats === null) return unresolvedPaths;
 
@@ -125,7 +126,7 @@ export class Spectral {
     const isPreassigned = document.formats !== void 0;
     for (const format of document.formats ?? formats) {
       if (format.unresolvedPaths === void 0 || format.unresolvedPaths.length === 0) continue;
-      if (!isPreassigned && !format(document.data, document.source)) continue;
+      if (!isPreassigned && !format(document.data, document.source, context)) continue;
       unresolvedPaths.push(...format.unresolvedPaths);
     }
 

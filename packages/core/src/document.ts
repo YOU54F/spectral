@@ -32,7 +32,7 @@ export class Document<D = unknown, R extends IParserResult<D> = IParserResult<D>
 
   constructor(
     protected readonly input: string,
-    protected readonly parser: IParser<R>,
+    public readonly parser: IParser<R>,
     source?: string,
   ) {
     this.parserResult = parser.parse(input);

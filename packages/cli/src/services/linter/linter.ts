@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { IDocument, IRuleResult, Ruleset, Spectral } from '@stoplight/spectral-core';
 import { readParsable, IFileReadOptions } from '@stoplight/spectral-runtime';
-import { getRuleset, listFiles, segregateEntriesPerKind, readFileDescriptor } from './utils';
+import { getParsers, getRuleset, listFiles, segregateEntriesPerKind, readFileDescriptor } from './utils';
 import { getResolver } from './utils/getResolver';
 import { ILintConfig } from '../config';
 import { CLIError } from '../../errors';
@@ -14,6 +14,7 @@ export interface LinterResult {
 export async function lint(documents: Array<number | string>, flags: ILintConfig): Promise<LinterResult> {
   const spectral = new Spectral({
     resolver: getResolver(flags.resolver),
+    parsers: getParsers(flags.parser),
   });
 
   const ruleset = await getRuleset(flags.ruleset);

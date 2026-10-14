@@ -23,6 +23,7 @@ export interface ILintConfig {
   format: OutputFormat[];
   output?: Dictionary<string>;
   resolver?: string;
+  parser?: string[];
   ruleset?: string;
   stdinFilepath?: string;
   ignoreUnknownFormat: boolean;

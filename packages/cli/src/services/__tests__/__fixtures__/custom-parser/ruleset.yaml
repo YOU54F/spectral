@@ -1,0 +1,6 @@
+rules:
+  defined-port:
+    given: $..port
+    severity: warn
+    then:
+      function: truthy
