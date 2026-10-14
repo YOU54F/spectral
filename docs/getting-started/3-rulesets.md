@@ -15,7 +15,7 @@ Spectral comes with four built-in rulesets:
 - `spectral:oas` - [OpenAPI v2/v3 rules](./4-openapi.md)
 - `spectral:asyncapi` - [AsyncAPI v2/v3 rules](./5-asyncapi.md)
 - `spectral:arazzo` - [Arazzo v1 rules](./6-arazzo.md)
-- `spectral:avro` - [Apache Avro schema rules](./7-avro.md)
+- `spectral:avro` - [Apache Avro schema rules](./11-avro.md)
 
 To create a ruleset that extends both rulesets, open your terminal and run:
 

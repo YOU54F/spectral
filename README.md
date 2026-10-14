@@ -59,7 +59,7 @@ docker run --rm -it -e DO_NOT_TRACK=1 -v $(pwd):/tmp stoplight/spectral lint --r
 
 Spectral, being a generic YAML/JSON linter, **needs a ruleset** to lint files. A ruleset is a JSON, YAML, or JavaScript/TypeScript file (often the file is called `.spectral.yaml` for a YAML ruleset) that contains a collection of rules, which can be used to lint other JSON or YAML files such as an API description.
 
-To get started, run this command in your terminal to create a `.spectral.yaml` file that uses the Spectral predefined rulesets based on OpenAPI, Arazzo or AsyncAPI (an [Apache Avro](https://meta.stoplight.io/docs/spectral/docs/getting-started/7-avro.md) ruleset, `spectral:avro`, is also available):
+To get started, run this command in your terminal to create a `.spectral.yaml` file that uses the Spectral predefined rulesets based on OpenAPI, Arazzo or AsyncAPI (an [Apache Avro](https://meta.stoplight.io/docs/spectral/docs/getting-started/11-avro.md) ruleset, `spectral:avro`, is also available):
 
 ```bash
 echo 'extends: ["spectral:oas", "spectral:asyncapi", "spectral:arazzo"]' > .spectral.yaml
