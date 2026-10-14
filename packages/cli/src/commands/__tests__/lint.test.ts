@@ -282,6 +282,18 @@ describe('lint', () => {
     expect(process.stderr.write).nthCalledWith(6, `Error #3: ${chalk.red('original exception')}\n`);
   });
 
+  it('calls lint with document and custom parsers', async () => {
+    const doc = './__fixtures__/config.kv';
+    await run(`lint --parser ./kv-parser.js ${doc}`);
+    expect(lint).toBeCalledWith([doc], expect.objectContaining({ parser: ['./kv-parser.js'] }));
+  });
+
+  it('calls lint with document and multiple custom parsers', async () => {
+    const doc = './__fixtures__/config.kv';
+    await run(`lint --parser ./kv-parser.js --parser ./ini-parser.js ${doc}`);
+    expect(lint).toBeCalledWith([doc], expect.objectContaining({ parser: ['./kv-parser.js', './ini-parser.js'] }));
+  });
+
   it('writes output for dashed formats via --output.<format> (#2926)', async () => {
     (formatOutput as jest.Mock).mockReturnValue('<formatted output>');
 

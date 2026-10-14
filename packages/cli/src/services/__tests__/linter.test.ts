@@ -114,6 +114,69 @@ describe('Linter service', () => {
     ]);
   });
 
+  describe('--parser', () => {
+    const kvResult = {
+      code: 'defined-port',
+      message: '"port" property must be truthy',
+      path: ['port'],
+      range: {
+        end: { character: 5, line: 1 },
+        start: { character: 0, line: 1 },
+      },
+      severity: DiagnosticSeverity.Warning,
+      source: join(__dirname, './__fixtures__/custom-parser/config.kv'),
+    };
+
+    it('parses documents with a parser loaded from a module', async () => {
+      const results = await run(
+        'lint -r ./custom-parser/ruleset.yaml --parser ./custom-parser/kv-parser.js ./custom-parser/config.kv',
+      );
+
+      expect(results).toEqual([kvResult]);
+    });
+
+    it('accepts absolute paths', async () => {
+      const parser = join(__dirname, '__fixtures__/custom-parser/kv-parser.js');
+      const results = await run(`lint -r ./custom-parser/ruleset.js --parser ${parser} ./custom-parser/config.kv`);
+
+      expect(results).toEqual([kvResult]);
+    });
+
+    it('accepts multiple parsers', async () => {
+      const results = await run(
+        'lint -r ./custom-parser/ruleset.yaml --parser ./custom-parser/kv-parser.js --parser ./custom-parser/kv-parser.js ./custom-parser/config.kv',
+      );
+
+      expect(results).toEqual([expect.objectContaining({ code: 'defined-port', path: ['port'] })]);
+    });
+
+    it('parses documents as YAML when no parser is given', async () => {
+      const results = await run('lint -r ./custom-parser/ruleset.yaml ./custom-parser/config.kv');
+
+      expect(results).not.toContainEqual(expect.objectContaining({ code: 'defined-port' }));
+    });
+
+    it('rejects URLs', () => {
+      return expect(
+        run('lint -r ./custom-parser/ruleset.yaml --parser https://example.com/kv-parser.js ./custom-parser/config.kv'),
+      ).rejects.toThrow('Parser "https://example.com/kv-parser.js" must be a local module, URLs are not supported.');
+    });
+
+    it('rejects modules that do not export a parser entry', () => {
+      return expect(
+        run(
+          'lint -r ./custom-parser/ruleset.yaml --parser ./custom-parser/invalid-parser.js ./custom-parser/config.kv',
+        ),
+      ).rejects.toThrow('Parser "./custom-parser/invalid-parser.js" must export a parser entry');
+    });
+
+    it('reports modules that cannot be loaded', () => {
+      return expect(
+        run('lint -r ./custom-parser/ruleset.yaml --parser ./custom-parser/missing.js ./custom-parser/config.kv'),
+      ).rejects.toThrow(/Cannot find module/);
+    });
+  });
+
   it('demands some ruleset to be present', () => {
     (process.cwd as jest.Mock).mockReturnValue(join(__dirname, '__fixtures__/resolver'));
     return expect(run(`lint stoplight-info-document.json`)).rejects.toThrow(

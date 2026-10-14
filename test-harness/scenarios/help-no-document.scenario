@@ -24,6 +24,7 @@ Options:
   -o, --output                   where to output results, can be a single file name, multiple "output.<format>" or missing to print to stdout  [string]
       --stdin-filepath           path to a file to pretend that stdin comes from  [string]
       --resolver                 path to custom json-ref-resolver instance  [string]
+      --parser                   path to a module exporting a custom parser entry for non-JSON/YAML documents, more than one can be provided by using multiple flags  [string]
   -r, --ruleset                  path/URL to a ruleset file  [string]
   -F, --fail-severity            results of this level or above will trigger a failure exit code  [string] [choices: "error", "warn", "info", "hint"] [default: "error"]
   -D, --display-only-failures    only output results equal to or greater than --fail-severity  [boolean] [default: false]

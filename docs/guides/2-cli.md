@@ -39,6 +39,8 @@ Other options include:
                                  missing to print to stdout                                                     [string]
       --stdin-filepath           path to a file to pretend that stdin comes from                                [string]
       --resolver                 path to custom json-ref-resolver instance                                      [string]
+      --parser                   path to a module exporting a custom parser entry for non-JSON/YAML documents, more
+                                 than one can be provided by using multiple flags                               [string]
   -r, --ruleset                  path/URL to a ruleset file                                                     [string]
   -F, --fail-severity            results of this level or above will trigger a failure exit code
                                                   [string] [choices: "error", "warn", "info", "hint"] [default: "error"]
@@ -224,3 +226,32 @@ module.exports = new Resolver({
 ```
 
 You can learn more about `$ref` resolving in the [JS section](./3-javascript.md#using-a-custom-resolver).
+
+## Custom Parsers
+
+Spectral parses documents as JSON or YAML. To lint other formats without writing a JavaScript ruleset, use the `--parser` flag and pass a path to a JS module exporting a parser entry, the same shape as the [`parsers` of a JavaScript ruleset](./4f-js-rulesets.md#custom-parsers). The module can also export an array of entries, and the flag can be repeated.
+
+### Example
+
+Assuming the filename is called `kv-parser.js` and the content looks as follows, run `spectral lint --parser ./kv-parser.js --ruleset .spectral.yaml config.kv`.
+
+```js
+module.exports = {
+  parser: {
+    parse(input) {
+      // return { data, ast, lineMap, diagnostics }
+    },
+    getLocationForJsonPath(result, path) {
+      // return { range } for the given path
+    },
+    trapAccess(obj) {
+      return obj;
+    },
+  },
+  extensions: [".kv"],
+};
+```
+
+The parser is used for the linted documents and for the files they `$ref`. Parsers passed with `--parser` take precedence over the ones declared in the ruleset.
+
+Like `--resolver`, the module runs with the same trust as a JavaScript ruleset, so only point it at code you trust. Relative paths are resolved against the working directory, package names against its `node_modules`. URLs are not supported.
