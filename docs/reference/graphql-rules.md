@@ -156,7 +156,14 @@ directive @auth on OBJECT
 
 The document must be a valid, standalone GraphQL schema, as checked by [graphql-js](https://github.com/graphql/graphql-js). This reports, for example, unknown types and directives, extensions of undefined types, misplaced directives, output types used as input types, and objects that do not implement their interfaces correctly.
 
-A missing `Query` type is not reported, so partial schemas are fine. Duplicate names are left to the uniqueness rules above. Directives that are defined elsewhere, such as Apollo Federation's `@key`, are reported as unknown. Turn this rule off for schemas that rely on them.
+A missing `Query` type is not reported, so partial schemas are fine. Duplicate names are left to the uniqueness rules above. Other directives that are defined elsewhere are reported as unknown. Turn this rule off for schemas that rely on them.
+
+[Apollo Federation](https://www.apollographql.com/docs/graphos/schema-design/federated-schemas/reference/directives) subgraphs don't need to define the federation directives and types they use:
+
+- A subgraph that links to Federation 2 with `@link(url: "https://specs.apollo.dev/federation/v2.x", ...)` on `schema` or `extend schema` may use the directives and types it imports under their imported names (including `as` renames), any others under their namespaced names, such as `@federation__shareable` or `FieldSet` as `federation__FieldSet` (or the `as` namespace of the `@link`), and `@link`, `link__Import`, `link__Purpose`, `_Any` and `_Service`. As with Apollo, a federation directive that isn't imported, such as `@shareable`, is reported as unknown under its short name.
+- A subgraph that uses `@key` or `@extends` without such a `@link` is taken to be a Federation 1 subgraph, which may use `@key`, `@external`, `@requires`, `@provides`, `@extends`, `@tag`, `@inaccessible`, `_FieldSet`, `_Any` and `_Service`.
+
+In both cases, types that are only extended, such as `extend type Query { ... }`, are not reported as undefined, and definitions in the document take precedence. Directive versions are not checked. Detection only kicks in for documents that use `@link` to Federation or `@key`/`@extends`, so plain schemas are validated as before. The `graphqlSchemaValid` function takes a `federation: false` option for programmatic use.
 
 **Recommended:** Yes
 

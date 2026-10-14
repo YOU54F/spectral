@@ -22,14 +22,30 @@ testRule('graphql-schema-valid', [
   },
   {
     name: 'unknown directives and extensions of undefined types',
-    document: 'type Pet @key(fields: "id") { id: ID }\nextend type Owner { id: ID }',
+    document: 'type Pet @cached(ttl: 60) { id: ID }\nextend type Owner { id: ID }',
     errors: [
-      { message: 'Unknown directive "@key".', path: ['definitions', '0', 'directives', '0'] },
+      { message: 'Unknown directive "@cached".', path: ['definitions', '0', 'directives', '0'] },
       {
         message: 'Cannot extend type "Owner" because it is not defined.',
         path: ['definitions', '1', 'name'],
       },
     ],
+  },
+  {
+    name: 'an Apollo Federation 2 subgraph',
+    document: [
+      'extend schema @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@shareable"])',
+      'type Query { products: [Product] @shareable }',
+      'type Product @key(fields: "id") { id: ID! price: Int @federation__requires(fields: "id") }',
+      'extend type Review @key(fields: "id") { id: ID! @tag(name: "public") }',
+    ].join('\n'),
+    errors: [{ message: 'Unknown directive "@tag".', path: ['definitions', '3', 'fields', '0', 'directives', '0'] }],
+  },
+  {
+    name: 'an Apollo Federation 1 subgraph',
+    document:
+      'extend type Query { me: User }\ntype User @key(fields: "id") @extends { id: ID! @external name: String @requires(fields: "id") }',
+    errors: [],
   },
   {
     name: 'interface conformance',

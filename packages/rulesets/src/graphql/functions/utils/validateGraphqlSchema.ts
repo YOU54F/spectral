@@ -23,6 +23,7 @@ import {
 import type { ASTNode, ASTVisitor, DocumentNode } from 'graphql';
 import type { Segment } from '@stoplight/types';
 import { getGraphqlAst } from '@stoplight/spectral-parsers/graphql';
+import { addFederationDefinitions } from './federation';
 
 // graphql-js `specifiedSDLRules`, split into the uniqueness rules, which the spectral:graphql ruleset covers
 // with rules of its own, and the rest.
@@ -80,19 +81,34 @@ const IGNORED_SCHEMA_ERRORS = new Set(['Query root type must be provided.']);
 
 export type GraphqlSchemaError = { message: string; path: Segment[] };
 
+export type ValidateGraphqlSchemaOptions = {
+  // Accept Apollo Federation subgraphs; see addFederationDefinitions. Defaults to true.
+  federation?: boolean;
+};
+
 /**
  * Validates a document produced by the Graphql parser as a standalone schema, the way graphql-js
  * `buildASTSchema` and `validateSchema` do: unknown types and directives, invalid extensions,
  * interface conformance and so on. Duplicate type, field, enum value and directive names are left to the
- * uniqueness rules. Returns `undefined` when the document was not produced by the Graphql parser.
+ * uniqueness rules. Apollo Federation subgraphs may use federation directives and types without defining them.
+ * Returns `undefined` when the document was not produced by the Graphql parser.
  */
-export function validateGraphqlSchema(data: unknown): GraphqlSchemaError[] | undefined {
+export function validateGraphqlSchema(
+  data: unknown,
+  { federation = true }: ValidateGraphqlSchemaOptions = {},
+): GraphqlSchemaError[] | undefined {
   const graphqlAst = getGraphqlAst(data);
   if (graphqlAst === void 0) return void 0;
 
-  const { document, paths } = graphqlAst;
+  const { paths } = graphqlAst;
+  const { document, substitutes } = federation
+    ? addFederationDefinitions(graphqlAst.document)
+    : { document: graphqlAst.document, substitutes: new Map<ASTNode, ASTNode>() };
+  // Errors in appended federation definitions, if any, have no path in the document.
   const toResult = (error: GraphQLError): GraphqlSchemaError => {
-    const node: ASTNode | undefined = error.nodes?.find(node => paths.has(node));
+    const node: ASTNode | undefined = error.nodes
+      ?.map(node => substitutes.get(node) ?? node)
+      .find(node => paths.has(node));
     return { message: error.message, path: node === void 0 ? [] : (paths.get(node) ?? []) };
   };
 
