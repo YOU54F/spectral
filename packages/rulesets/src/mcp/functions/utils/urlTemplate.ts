@@ -19,7 +19,9 @@ export function substituteTemplateVariables(url: string): string {
 
 export function parseUrl(url: string): URL | null {
   try {
-    return new URL(url);
+    const parsed = new URL(url);
+    // Chromium percent-encodes forbidden host code points (e.g. spaces) instead of throwing like Node does.
+    return parsed.hostname.includes('%') ? null : parsed;
   } catch {
     return null;
   }
