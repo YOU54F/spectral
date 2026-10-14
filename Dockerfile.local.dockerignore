@@ -1,0 +1,10 @@
+**/node_modules
+**/dist
+**/__tests__
+**/__karma__
+docs
+.git
+.github
+test-harness
+**/*.tsbuildinfo
+**/.cache

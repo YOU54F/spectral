@@ -1,0 +1,38 @@
+# syntax=docker/dockerfile:1
+#
+# Local-only image: Spectral built from this branch's source, rather than installed from npm like ./Dockerfile.
+# Published to the local Gitea container registry for the Petstore Inc. demo:
+#   docker build -f Dockerfile.local --secret id=ca,src="$HOME/.zscaler-ca-bundle.pem" -t spectral-local:petstore-inc .
+#
+# Optional build secret "ca": a full PEM bundle (public roots + a TLS-intercepting proxy root such as Zscaler),
+# mounted only while yarn talks to the registry and never stored in a layer.
+# Dependency lifecycle scripts are never run (YARN_ENABLE_SCRIPTS=false).
+
+FROM node:24 AS build
+
+WORKDIR /usr/src/spectral
+ENV YARN_ENABLE_SCRIPTS=false
+
+COPY . .
+RUN --mount=type=secret,id=ca,required=false \
+    if [ -s /run/secrets/ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/ca; fi; \
+    yarn install --immutable && yarn build
+
+# keep only what the CLI needs at runtime
+RUN --mount=type=secret,id=ca,required=false \
+    if [ -s /run/secrets/ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/ca; fi; \
+    yarn workspaces focus --production @stoplight/spectral-cli
+
+###############################################################
+FROM node:24-alpine
+
+WORKDIR /usr/src/spectral
+ENV NODE_ENV=production
+
+COPY --from=build /usr/src/spectral/node_modules ./node_modules
+COPY --from=build /usr/src/spectral/packages ./packages
+COPY --from=build /usr/src/spectral/package.json ./
+
+RUN chmod +x packages/cli/dist/index.js && ln -s /usr/src/spectral/packages/cli/dist/index.js /usr/local/bin/spectral
+
+ENTRYPOINT ["spectral"]
