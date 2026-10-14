@@ -69,8 +69,8 @@ function createAjvInstance(Ajv: typeof AjvCore, validationOptions: ValidationOpt
 
 const instanceKey = (validationOptions: ValidationOptions): AjvInstanceKey => {
   const parts = [
-    validationOptions.allErrors ?? false ? 'allErrors' : 'default',
-    validationOptions.unicodeRegExp ?? false ? 'unicodeRegExp' : 'noUnicodeRegExp',
+    (validationOptions.allErrors ?? false) ? 'allErrors' : 'default',
+    (validationOptions.unicodeRegExp ?? false) ? 'unicodeRegExp' : 'noUnicodeRegExp',
   ];
   return parts.join('-');
 };
