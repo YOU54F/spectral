@@ -473,6 +473,42 @@ describe('linter', () => {
     ]);
   });
 
+  test('given a document that fails to parse, should not warn about unmatched formats', async () => {
+    const failingParser: Parsers.IParser = {
+      parse: () => ({
+        data: void 0,
+        diagnostics: [
+          {
+            code: 'parse-error',
+            message: 'Unexpected token',
+            severity: DiagnosticSeverity.Error,
+            range: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } },
+          },
+        ],
+        ast: {},
+        lineMap: [],
+      }),
+      getLocationForJsonPath: () => void 0,
+      trapAccess: obj => obj,
+    };
+
+    spectral.setRuleset({
+      formats: [() => false],
+      rules: {
+        test: {
+          given: '$',
+          then: {
+            function: truthy,
+          },
+        },
+      },
+    });
+
+    const result = await spectral.run(new Document('{', failingParser));
+
+    expect(result.map(({ code }) => code)).toEqual(['parser']);
+  });
+
   // TODO: Find a way to cover formats more extensively
   test('given a string input, should warn about unmatched formats', async () => {
     const oas2: Format = () => false;

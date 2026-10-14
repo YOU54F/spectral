@@ -6,5 +6,6 @@ import { default as a2a } from './a2a';
 import { default as overlay } from './overlay';
 import { default as openrpc } from './openrpc';
 import { default as avro } from './avro';
+import { default as graphql } from './graphql';
 
-export { oas, asyncapi, arazzo, mcp, a2a, overlay, openrpc, avro };
+export { oas, asyncapi, arazzo, mcp, a2a, overlay, openrpc, avro, graphql };

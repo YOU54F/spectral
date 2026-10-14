@@ -15,6 +15,7 @@ const REPLACEMENTS = {
   'spectral:overlay': 'overlay',
   'spectral:openrpc': 'openrpc',
   'spectral:avro': 'avro',
+  'spectral:graphql': 'graphql',
 };
 
 export { transformer as default };

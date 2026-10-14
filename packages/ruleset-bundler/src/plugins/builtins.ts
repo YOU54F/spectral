@@ -2,12 +2,14 @@ import * as core from '@stoplight/spectral-core';
 import * as formats from '@stoplight/spectral-formats';
 import * as functions from '@stoplight/spectral-functions';
 import * as parsers from '@stoplight/spectral-parsers';
+import * as graphqlParser from '@stoplight/spectral-parsers/graphql';
 import * as refResolver from '@stoplight/spectral-ref-resolver';
 import * as rulesets from '@stoplight/spectral-rulesets';
 import * as runtime from '@stoplight/spectral-runtime';
 import type { Plugin, InputOptions } from 'rollup';
 
-type Module = 'core' | 'formats' | 'functions' | 'parsers' | 'ref-resolver' | 'rulesets' | 'runtime';
+type Module =
+  'core' | 'formats' | 'functions' | 'parsers' | 'parsers/graphql' | 'ref-resolver' | 'rulesets' | 'runtime';
 type GlobalModules = Record<`@stoplight/spectral-${Module}`, string>;
 type Overrides = Record<keyof GlobalModules, Record<string, unknown>>;
 
@@ -42,6 +44,7 @@ export const builtins = (overrides: Partial<Overrides> = {}): Plugin => {
     registerModule(instanceId, '@stoplight/spectral-formats', formats, overrides),
     registerModule(instanceId, '@stoplight/spectral-functions', functions, overrides),
     registerModule(instanceId, '@stoplight/spectral-parsers', parsers, overrides),
+    registerModule(instanceId, '@stoplight/spectral-parsers/graphql', graphqlParser, overrides),
     registerModule(instanceId, '@stoplight/spectral-ref-resolver', refResolver, overrides),
     registerModule(instanceId, '@stoplight/spectral-rulesets', rulesets, overrides),
     registerModule(instanceId, '@stoplight/spectral-runtime', runtime, overrides),

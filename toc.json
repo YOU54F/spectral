@@ -65,6 +65,11 @@
       "uri": "/docs/getting-started/11-avro.md"
     },
     {
+      "type": "item",
+      "title": "GraphQL Support",
+      "uri": "/docs/getting-started/12-graphql.md"
+    },
+    {
       "type": "divider",
       "title": "guides"
     },
@@ -176,6 +181,11 @@
       "type": "item",
       "title": "A2A Agent Card Rules",
       "uri": "/docs/reference/a2a-rules.md"
+    },
+    {
+      "type": "item",
+      "title": "GraphQL Rules",
+      "uri": "/docs/reference/graphql-rules.md"
     },
     {
       "type": "item",

@@ -87,9 +87,12 @@ export class Spectral {
     const ruleset = this.ruleset.fromSource(document.source, document.formats ?? null);
 
     const runner = new Runner(inventory);
-    runner.results.push(...this._filterParserErrors(document.diagnostics, ruleset.parserOptions));
+    const parserErrors = this._filterParserErrors(document.diagnostics, ruleset.parserOptions);
+    runner.results.push(...parserErrors);
 
-    if (unrecognizedFormat) {
+    // A document that failed to parse is already reported, so its format is not reported as well.
+    const failedToParse = parserErrors.some(({ severity }) => severity === DiagnosticSeverity.Error);
+    if (unrecognizedFormat && !failedToParse) {
       runner.addResult(this._generateUnrecognizedFormatError(document, Array.from(candidateFormats)));
     }
 

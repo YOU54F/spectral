@@ -7,3 +7,4 @@ export * from './a2a';
 export * from './overlay';
 export * from './openrpc';
 export * from './avro';
+export * from './graphql';

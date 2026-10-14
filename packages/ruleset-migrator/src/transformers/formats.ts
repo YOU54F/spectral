@@ -23,6 +23,7 @@ const FORMATS = [
   'mcpServer',
   'openrpc1',
   'avro1',
+  'graphql',
   'json-schema',
   'json-schema-loose',
   'json-schema-draft4',

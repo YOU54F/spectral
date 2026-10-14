@@ -68,6 +68,7 @@ Here you can build a [custom ruleset](../getting-started/3-rulesets.md), or exte
 - [OpenAPI Overlay ruleset](../reference/overlay-rules.md)
 - [OpenRPC ruleset](../reference/openrpc-rules.md)
 - [Avro ruleset](../reference/avro-rules.md)
+- [GraphQL ruleset](../reference/graphql-rules.md)
 
 ## Error Results
 

@@ -1,0 +1,29 @@
+import { DiagnosticSeverity } from '@stoplight/types';
+import testRule from './__helpers__/tester';
+
+testRule('graphql-field-description', [
+  {
+    name: 'described fields',
+    document: 'type Pet {\n  "The id"\n  id: ID\n}\ninput PetInput {\n  """The name"""\n  name: String\n}',
+    errors: [],
+  },
+  {
+    name: 'empty descriptions',
+    document: 'type Pet {\n  "  "\n  id: ID\n}',
+    errors: [{ path: ['definitions', '0', 'fields', '0', 'name'] }],
+  },
+  {
+    name: 'undescribed fields and input fields',
+    document: 'type Pet {\n  id: ID\n}\ninput PetInput {\n  name: String\n}\nextend type Pet {\n  age: Int\n}',
+    errors: [
+      {
+        message: 'Fields and input fields should have a description.',
+        path: ['definitions', '0', 'fields', '0', 'name'],
+        severity: DiagnosticSeverity.Warning,
+        range: { start: { line: 1, character: 2 }, end: { line: 1, character: 4 } },
+      },
+      { path: ['definitions', '1', 'fields', '0', 'name'] },
+      { path: ['definitions', '2', 'fields', '0', 'name'] },
+    ],
+  },
+]);
