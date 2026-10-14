@@ -76,6 +76,8 @@ jobs:
     - name: Setup Chrome
       uses: browser-actions/setup-chrome@v2.2.0
       id: setup-chrome
+      with:
+        install-dependencies: true
     - name: Install chrome dependencies
       run: yarn add -D karma-chrome-launcher
     - name: Build
