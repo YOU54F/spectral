@@ -1,0 +1,4 @@
+extends: spectral:graphql
+rules:
+  graphql-argument-description: off
+  graphql-enum-value-description: off

@@ -36,6 +36,11 @@
     },
     {
       "type": "item",
+      "title": "GraphQL Support",
+      "uri": "/docs/getting-started/12-graphql.md"
+    },
+    {
+      "type": "item",
       "title": "AsyncAPI Support",
       "uri": "/docs/getting-started/5-asyncapi.md"
     },
@@ -97,7 +102,7 @@
           "title": "JavaScript Ruleset Format",
           "uri": "/docs/guides/4f-js-rulesets.md"
         }
-       ]    
+      ]
     },
     {
       "type": "item",
@@ -146,6 +151,11 @@
       "type": "item",
       "title": "Arazzo Rules",
       "uri": "/docs/reference/arazzo-rules.md"
+    },
+    {
+      "type": "item",
+      "title": "GraphQL Rules",
+      "uri": "/docs/reference/graphql-rules.md"
     },
     {
       "type": "item",

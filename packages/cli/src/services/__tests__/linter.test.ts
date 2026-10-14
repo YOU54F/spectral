@@ -114,6 +114,44 @@ describe('Linter service', () => {
     ]);
   });
 
+  it('lints GraphQL SDL with a ruleset extending spectral:graphql', async () => {
+    const results = await run('lint -r ./graphql/.spectral.yaml ./graphql/schema.graphql');
+    const source = join(__dirname, './__fixtures__/graphql/schema.graphql');
+
+    expect(results).toEqual([
+      {
+        code: 'graphql-field-name-camel-case',
+        documentationUrl:
+          'https://meta.stoplight.io/docs/spectral/docs/reference/graphql-rules.md#graphql-field-name-camel-case',
+        message: 'Name "pet_by_id" should be camelCase.',
+        path: ['definitions', '0', 'fields', '0', 'name'],
+        range: { start: { line: 3, character: 2 }, end: { line: 3, character: 11 } },
+        severity: DiagnosticSeverity.Warning,
+        source,
+      },
+      {
+        code: 'graphql-type-description',
+        documentationUrl:
+          'https://meta.stoplight.io/docs/spectral/docs/reference/graphql-rules.md#graphql-type-description',
+        message: 'Types should have a description.',
+        path: ['definitions', '1'],
+        range: { start: { line: 6, character: 0 }, end: { line: 9, character: 1 } },
+        severity: DiagnosticSeverity.Warning,
+        source,
+      },
+      {
+        code: 'graphql-deprecated-reason',
+        documentationUrl:
+          'https://meta.stoplight.io/docs/spectral/docs/reference/graphql-rules.md#graphql-deprecated-reason',
+        message: '@deprecated should have a "reason".',
+        path: ['definitions', '1', 'fields', '0', 'directives', '0', 'arguments'],
+        range: { start: { line: 8, character: 15 }, end: { line: 8, character: 26 } },
+        severity: DiagnosticSeverity.Warning,
+        source,
+      },
+    ]);
+  });
+
   it('demands some ruleset to be present', () => {
     (process.cwd as jest.Mock).mockReturnValue(join(__dirname, '__fixtures__/resolver'));
     return expect(run(`lint stoplight-info-document.json`)).rejects.toThrow(

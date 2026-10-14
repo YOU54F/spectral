@@ -1,0 +1,10 @@
+"The query root"
+type Query {
+  "Finds a pet"
+  pet_by_id(id: ID!): Pet
+}
+
+type Pet {
+  "The name"
+  name: String @deprecated
+}

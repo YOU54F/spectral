@@ -3623,13 +3623,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@stoplight/spectral-parsers@*, @stoplight/spectral-parsers@>=1, @stoplight/spectral-parsers@^1.0.4, @stoplight/spectral-parsers@workspace:packages/parsers":
+"@stoplight/spectral-parsers@*, @stoplight/spectral-parsers@>=1, @stoplight/spectral-parsers@^1.0.4, @stoplight/spectral-parsers@^1.0.5, @stoplight/spectral-parsers@workspace:packages/parsers":
   version: 0.0.0-use.local
   resolution: "@stoplight/spectral-parsers@workspace:packages/parsers"
   dependencies:
     "@stoplight/json": ~3.21.0
     "@stoplight/types": ^14.1.1
     "@stoplight/yaml": ~4.3.0
+    graphql: ^16.14.2
     tslib: ^2.8.1
   languageName: unknown
   linkType: soft
@@ -3712,7 +3713,7 @@ __metadata:
     "@stoplight/spectral-core": ^1.23.0
     "@stoplight/spectral-formats": ^1.8.1
     "@stoplight/spectral-functions": ^1.9.1
-    "@stoplight/spectral-parsers": "*"
+    "@stoplight/spectral-parsers": ^1.0.5
     "@stoplight/spectral-ref-resolver": ^1.0.4
     "@stoplight/spectral-runtime": ^1.1.2
     "@stoplight/types": ^13.6.0
@@ -8692,6 +8693,13 @@ __metadata:
   version: 4.2.11
   resolution: "graceful-fs@npm:4.2.11"
   checksum: ac85f94da92d8eb6b7f5a8b20ce65e43d66761c55ce85ac96df6865308390da45a8d3f0296dd3a663de65d30ba497bd46c696cc1e248c72b13d6d567138a4fc7
+  languageName: node
+  linkType: hard
+
+"graphql@npm:^16.14.2":
+  version: 16.14.2
+  resolution: "graphql@npm:16.14.2"
+  checksum: 8d44ddb96e32dfd5e076d454c9e06872242302ff5da7c8b57c2af5449a1f929a6dcd919b25f6735d6d4be72f05988f0f748bd566a4444c206665209f94270794
   languageName: node
   linkType: hard
 

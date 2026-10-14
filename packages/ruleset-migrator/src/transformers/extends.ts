@@ -10,6 +10,7 @@ const REPLACEMENTS = {
   'spectral:oas': 'oas',
   'spectral:asyncapi': 'asyncapi',
   'spectral:arazzo': 'arazzo',
+  'spectral:graphql': 'graphql',
 };
 
 export { transformer as default };
