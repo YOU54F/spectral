@@ -65,6 +65,7 @@ Here you can build a [custom ruleset](../getting-started/3-rulesets.md), or exte
 - [Arazzo ruleset](../reference/arazzo-rules.md)
 - [MCP ruleset](../reference/mcp-rules.md)
 - [A2A Agent Card ruleset](../reference/a2a-rules.md)
+- [OpenAPI Overlay ruleset](../reference/overlay-rules.md)
 
 ## Error Results
 

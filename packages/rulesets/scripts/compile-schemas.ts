@@ -31,6 +31,13 @@ const schemas = [
   'arazzo/schemas/arazzo/v1.2/index.json',
 ].map(async schema => JSON.parse(await fs.promises.readFile(path.join(cwd, schema), 'utf8')));
 
+// Overlay validators are compiled with a dedicated Ajv instance so that they end up in a separate, small module
+const overlaySchemas = [
+  'overlay/schemas/overlay/v1.0/index.json',
+  'overlay/schemas/overlay/v1.1/index.json',
+  'overlay/schemas/overlay/v1.2/index.json',
+].map(async schema => JSON.parse(await fs.promises.readFile(path.join(cwd, schema), 'utf8')));
+
 const log = process.argv.includes('--quiet')
   ? (): void => {
       /* no-op */
@@ -106,6 +113,56 @@ Promise.all(schemas)
     await compileA2aSchemas(cwd, log);
   })
   .then(compileMcpValidators)
+  .then(async () => {
+    const ajv = new Ajv2020({
+      schemas: await Promise.all(overlaySchemas),
+      allErrors: true,
+      messages: true,
+      strict: false,
+      inlineRefs: false,
+      code: {
+        esm: true,
+        source: true,
+      },
+    });
+
+    ajvFormats(ajv);
+    ajvErrors(ajv);
+
+    const target = path.join(cwd, 'overlay/schemas/validators.ts');
+    const code = standaloneCode(ajv, {
+      overlay1_0: 'https://spec.openapis.org/overlay/1.0/schema/2026-04-01',
+      overlay1_1: 'https://spec.openapis.org/overlay/1.1/schema/2026-04-01',
+      overlay1_2: 'https://spec.openapis.org/overlay/1.2/schema/2026-08-08',
+      // the two branches of the Overlay 1.2 "actions" oneOf, used to report errors of the relevant branch only
+      overlay1_2_action: 'https://spec.openapis.org/overlay/1.2/schema/2026-08-08#/$defs/action-object',
+      overlay1_2_actionReference:
+        'https://spec.openapis.org/overlay/1.2/schema/2026-08-08#/$defs/reusable-action-reference-object',
+    });
+
+    const minified = (
+      await minify(code, {
+        compress: {
+          passes: 2,
+        },
+        ecma: 2020,
+        module: true,
+        format: {
+          comments: false,
+        },
+      })
+    ).code as string;
+
+    log(
+      'writing %s size is %dKB (original), %dKB (minified) %dKB (minified + gzipped)',
+      target,
+      Math.round((code.length / 1024) * 100) / 100,
+      Math.round((minified.length / 1024) * 100) / 100,
+      Math.round((sync(minified) / 1024) * 100) / 100,
+    );
+
+    await fs.promises.writeFile(target, ['// @ts-nocheck', minified].join('\n'));
+  })
   .then(() => {
     log(chalk.green('Validators generated.'));
   })

@@ -12,6 +12,7 @@ const REPLACEMENTS = {
   'spectral:arazzo': 'arazzo',
   'spectral:mcp': 'mcp',
   'spectral:a2a': 'a2a',
+  'spectral:overlay': 'overlay',
 };
 
 export { transformer as default };

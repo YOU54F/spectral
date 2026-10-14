@@ -88,6 +88,7 @@ export default {
           "const mcp = globalThis[Symbol.for('@stoplight-spectral/builtins')]['822928']['@stoplight/spectral-rulesets']['mcp'];",
           "const oas = globalThis[Symbol.for('@stoplight-spectral/builtins')]['822928']['@stoplight/spectral-rulesets']['oas'];",
           "const or = globalThis[Symbol.for('@stoplight-spectral/builtins')]['822928']['@stoplight/spectral-functions']['or'];",
+          "const overlay = globalThis[Symbol.for('@stoplight-spectral/builtins')]['822928']['@stoplight/spectral-rulesets']['overlay'];",
           "const pattern = globalThis[Symbol.for('@stoplight-spectral/builtins')]['822928']['@stoplight/spectral-functions']['pattern'];",
           "const schema = globalThis[Symbol.for('@stoplight-spectral/builtins')]['822928']['@stoplight/spectral-functions']['schema'];",
           "const truthy = globalThis[Symbol.for('@stoplight-spectral/builtins')]['822928']['@stoplight/spectral-functions']['truthy'];",
