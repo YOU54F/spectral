@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package acme.pets.v1;
+
+message Pet {
+  string petId = 1;
+}
+
+enum Kind {
+  KIND_UNSPECIFIED = 0;
+}

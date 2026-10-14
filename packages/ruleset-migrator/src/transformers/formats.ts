@@ -24,6 +24,7 @@ const FORMATS = [
   'openrpc1',
   'avro1',
   'graphql',
+  'protobuf',
   'json-schema',
   'json-schema-loose',
   'json-schema-draft4',

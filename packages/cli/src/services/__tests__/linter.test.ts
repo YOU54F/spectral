@@ -151,6 +151,26 @@ describe('Linter service', () => {
     ]);
   });
 
+  it('lints .proto files using spectral:protobuf', async () => {
+    const results = await run('lint -r ./protobuf/ruleset.yaml ./protobuf/pets.proto');
+
+    expect(results).toEqual([
+      {
+        code: 'protobuf-field-names-lower-snake-case',
+        documentationUrl:
+          'https://meta.stoplight.io/docs/spectral/docs/reference/protobuf-rules.md#protobuf-field-names-lower-snake-case',
+        message: 'Field name "petId" must be lower_snake_case.',
+        path: ['messages', '0', 'fields', '0', 'name'],
+        range: {
+          start: { line: 5, character: 9 },
+          end: { line: 5, character: 14 },
+        },
+        severity: DiagnosticSeverity.Warning,
+        source: join(__dirname, './__fixtures__/protobuf/pets.proto'),
+      },
+    ]);
+  });
+
   it('demands some ruleset to be present', () => {
     (process.cwd as jest.Mock).mockReturnValue(join(__dirname, '__fixtures__/resolver'));
     return expect(run(`lint stoplight-info-document.json`)).rejects.toThrow(

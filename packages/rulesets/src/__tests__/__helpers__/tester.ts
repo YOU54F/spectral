@@ -7,8 +7,14 @@ import arazzoRuleset from '../../arazzo/index';
 import a2aRuleset from '../../a2a/index';
 import openrpcRuleset from '../../openrpc/index';
 import avroRuleset from '../../avro/index';
+import protobufRuleset from '../../protobuf/index';
 
-type Ruleset = typeof oasRuleset & typeof aasRuleset & typeof a2aRuleset & typeof openrpcRuleset & typeof avroRuleset;
+type Ruleset = typeof oasRuleset &
+  typeof aasRuleset &
+  typeof a2aRuleset &
+  typeof openrpcRuleset &
+  typeof avroRuleset &
+  typeof protobufRuleset;
 export type RuleName = keyof Ruleset['rules'];
 
 type Scenario = ReadonlyArray<
@@ -51,6 +57,7 @@ export function createWithRules(rules: (keyof Ruleset['rules'])[]): Spectral {
       [a2aRuleset, 'off'],
       [openrpcRuleset as RulesetDefinition, 'off'],
       [avroRuleset, 'off'],
+      [protobufRuleset as RulesetDefinition, 'off'],
     ],
     rules: rules.reduce((obj, name) => {
       obj[name] = true;

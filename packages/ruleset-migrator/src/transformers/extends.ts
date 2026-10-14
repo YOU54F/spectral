@@ -16,6 +16,7 @@ const REPLACEMENTS = {
   'spectral:openrpc': 'openrpc',
   'spectral:avro': 'avro',
   'spectral:graphql': 'graphql',
+  'spectral:protobuf': 'protobuf',
 };
 
 export { transformer as default };

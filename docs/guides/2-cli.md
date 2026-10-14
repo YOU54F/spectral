@@ -69,6 +69,7 @@ Here you can build a [custom ruleset](../getting-started/3-rulesets.md), or exte
 - [OpenRPC ruleset](../reference/openrpc-rules.md)
 - [Avro ruleset](../reference/avro-rules.md)
 - [GraphQL ruleset](../reference/graphql-rules.md)
+- [Protobuf ruleset](../reference/protobuf-rules.md)
 
 ## Error Results
 

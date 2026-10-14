@@ -1,0 +1,3 @@
+extends: spectral:protobuf
+rules:
+  protobuf-comments: off

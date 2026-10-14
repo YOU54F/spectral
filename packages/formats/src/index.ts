@@ -8,3 +8,4 @@ export * from './overlay';
 export * from './openrpc';
 export * from './avro';
 export * from './graphql';
+export * from './protobuf';
