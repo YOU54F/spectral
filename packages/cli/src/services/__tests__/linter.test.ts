@@ -122,7 +122,7 @@ describe('Linter service', () => {
         code: 'wsdl-message-part-reference',
         documentationUrl:
           'https://meta.stoplight.io/docs/spectral/docs/reference/wsdl-rules.md#wsdl-message-part-reference',
-        message: 'Element "tns:GetPetResponse" is not defined in the inline schema for "urn:example:petstore".',
+        message: 'Element "tns:GetPetResponse" is not defined in the schema for "urn:example:petstore".',
         path: ['root', 'children', '2', 'children', '0', 'attributes', 'element', 'value'],
         range: {
           start: { line: 17, character: 42 },

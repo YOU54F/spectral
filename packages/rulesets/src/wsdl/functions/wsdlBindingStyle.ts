@@ -1,12 +1,11 @@
 import { createRulesetFunction } from '@stoplight/spectral-core';
 import type { IFunctionResult } from '@stoplight/spectral-core';
-import type { XmlElement } from '@stoplight/spectral-parsers';
-import { attr, attrPath, children, definitions, soapBinding, SOAP_NAMESPACES, WSDL } from './utils';
+import { attr, attrPath, children, definitions, soapBinding, SOAP_NAMESPACES, WSDL, WsdlDocument } from './utils';
 import type { Located } from './utils';
 
 // With `check: rpc`, flags rpc style on soap:binding and soap:operation.
 // With `check: consistent`, flags operations whose style differs from the first operation of the binding (WS-I BP R2705).
-export default createRulesetFunction<XmlElement, { check: 'rpc' | 'consistent' }>(
+export default createRulesetFunction<WsdlDocument, { check: 'rpc' | 'consistent' }>(
   {
     input: null,
     options: {

@@ -1,10 +1,9 @@
 import { createRulesetFunction } from '@stoplight/spectral-core';
 import type { IFunctionResult } from '@stoplight/spectral-core';
-import type { XmlElement } from '@stoplight/spectral-parsers';
-import { attrPath, children, definitions, Located, SOAP_NAMESPACES, WSDL } from './utils';
+import { attrPath, children, definitions, Located, SOAP_NAMESPACES, WSDL, WsdlDocument } from './utils';
 
 // soap:body, soap:header, soap:headerfault and soap:fault must not use the SOAP encoding (WS-I BP R2706).
-export default createRulesetFunction<XmlElement, null>(
+export default createRulesetFunction<WsdlDocument, null>(
   {
     input: null,
     options: null,

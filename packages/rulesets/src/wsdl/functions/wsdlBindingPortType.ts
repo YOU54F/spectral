@@ -1,10 +1,9 @@
 import { createRulesetFunction } from '@stoplight/spectral-core';
 import type { IFunctionResult } from '@stoplight/spectral-core';
-import type { XmlElement } from '@stoplight/spectral-parsers';
-import { attr, attrPath, children, definitions, reference, WSDL } from './utils';
+import { attr, attrPath, children, definitions, reference, WSDL, WsdlDocument } from './utils';
 
 // Bindings must refer to a defined port type, and with `operations`, bind only operations of that port type.
-export default createRulesetFunction<XmlElement, { check: 'type' | 'operations' }>(
+export default createRulesetFunction<WsdlDocument, { check: 'type' | 'operations' }>(
   {
     input: null,
     options: {

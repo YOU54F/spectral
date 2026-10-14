@@ -69,6 +69,8 @@ The parser is a small, non-validating XML 1.0 parser with namespace support:
 
 ## Limitations
 
-- Only one file is linted at a time. `wsdl:import`, `xsd:import` and `xsd:include` are not followed, so references into an imported namespace are not checked, and neither are references into an inline schema that includes another file.
+- `wsdl:import` (`location`) and `xsd:import`, `xsd:include`, `xsd:redefine` and `xsd:override` (`schemaLocation`) in `wsdl:types` are followed with Spectral's resolver, so relative paths, `file:` and `http(s):` URLs work and the resolver settings apply. Imported files are used to look up references, but are not linted themselves; results are only reported for the file you lint.
+- References into the namespace of an import that is not followed (no location, or a URL scheme other than `file:` and `http(s):`) are not checked, so they do not cause false positives. The same goes for a file that cannot be loaded, which is also reported as `invalid-ref`. An inline schema that includes a file that cannot be loaded is treated as open.
+- Files with a `.xsd` extension, and other files whose root is an XML Schema `schema` element, are parsed with the WSDL parser so they can be imported. An XML Schema is not a WSDL document, so the WSDL rules do not run when you lint one on its own.
 - Inline XML Schemas in `wsdl:types` are only used to look up the top-level elements and types that message parts refer to. The schemas themselves are not validated.
 - The rules check a subset of the WS-I Basic Profile, not all of it.

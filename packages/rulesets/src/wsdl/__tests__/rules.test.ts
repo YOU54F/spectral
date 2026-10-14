@@ -62,11 +62,11 @@ testRule('wsdl-message-part-reference', [
         range: range(10, 29, 34),
       },
       {
-        message: 'Element "tns:Missing" is not defined in the inline schema for "urn:example:petstore".',
+        message: 'Element "tns:Missing" is not defined in the schema for "urn:example:petstore".',
         path: ['root', 'children', '1', 'children', '3', 'attributes', 'element', 'value'],
       },
       {
-        message: 'Type "tns:Pet" is not defined in the inline schema for "urn:example:petstore".',
+        message: 'Type "tns:Pet" is not defined in the schema for "urn:example:petstore".',
         path: ['root', 'children', '1', 'children', '4', 'attributes', 'type', 'value'],
       },
     ],
@@ -76,7 +76,7 @@ testRule('wsdl-message-part-reference', [
     document: definitions('<wsdl:message name="A"><wsdl:part name="a" element="tns:Pet"/></wsdl:message>'),
     errors: [
       {
-        message: 'Element "tns:Pet" is not defined: no inline schema has the namespace "urn:example:petstore".',
+        message: 'Element "tns:Pet" is not defined: no schema has the namespace "urn:example:petstore".',
         path: ['root', 'children', '0', 'children', '0', 'attributes', 'element', 'value'],
       },
     ],

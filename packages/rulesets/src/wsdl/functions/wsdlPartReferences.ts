@@ -1,11 +1,11 @@
 import { createRulesetFunction } from '@stoplight/spectral-core';
 import type { IFunctionResult } from '@stoplight/spectral-core';
-import type { XmlElement } from '@stoplight/spectral-parsers';
-import { attr, attrPath, children, definitions, resolveQName, WSDL, XSD } from './utils';
+import { attr, attrPath, children, definitions, resolveQName, WSDL, XSD, WsdlDocument } from './utils';
 
 // Message parts refer to an XSD element or type. The QName prefix must be bound, and when the namespace
-// is the target namespace or the target namespace of an inline schema, the element or type must be defined there.
-export default createRulesetFunction<XmlElement, null>(
+// is the target namespace or the target namespace of an inline or imported schema, the element or type must be
+// defined there. Namespaces imported from files that could not be loaded are not checked.
+export default createRulesetFunction<WsdlDocument, null>(
   {
     input: null,
     options: null,
@@ -46,13 +46,13 @@ export default createRulesetFunction<XmlElement, null>(
           }
 
           const { namespace, localName } = qname;
-          if (namespace === XSD || (namespace !== null && defs.imported.has(namespace))) continue;
+          if (namespace === XSD || (namespace !== null && defs.unchecked.has(namespace))) continue;
           const schema = defs.schemas.get(namespace);
           const kind = attribute === 'element' ? 'Element' : 'Type';
           if (schema === void 0) {
             if (namespace === defs.targetNamespace) {
               results.push({
-                message: `${kind} "${value}" is not defined: no inline schema has the namespace "${namespace ?? ''}".`,
+                message: `${kind} "${value}" is not defined: no schema has the namespace "${namespace ?? ''}".`,
                 path: attrPath(part, attribute),
               });
             }
@@ -62,7 +62,7 @@ export default createRulesetFunction<XmlElement, null>(
 
           if (!schema.open && !(attribute === 'element' ? schema.elements : schema.types).has(localName)) {
             results.push({
-              message: `${kind} "${value}" is not defined in the inline schema for "${namespace ?? ''}".`,
+              message: `${kind} "${value}" is not defined in the schema for "${namespace ?? ''}".`,
               path: attrPath(part, attribute),
             });
           }

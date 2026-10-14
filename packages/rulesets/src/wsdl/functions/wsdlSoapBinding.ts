@@ -1,10 +1,9 @@
 import { createRulesetFunction } from '@stoplight/spectral-core';
 import type { IFunctionResult } from '@stoplight/spectral-core';
-import type { XmlElement } from '@stoplight/spectral-parsers';
-import { attr, attrPath, children, definitions, isHttpBinding, soapBinding, WSDL } from './utils';
+import { attr, attrPath, children, definitions, isHttpBinding, soapBinding, WSDL, WsdlDocument } from './utils';
 
 // Every binding must have a soap:binding or soap12:binding with a transport. HTTP bindings (http:binding) are skipped.
-export default createRulesetFunction<XmlElement, null>(
+export default createRulesetFunction<WsdlDocument, null>(
   {
     input: null,
     options: null,

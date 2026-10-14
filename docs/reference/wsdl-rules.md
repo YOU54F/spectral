@@ -6,13 +6,13 @@ In your ruleset file you can add `extends: "spectral:wsdl"` and you'll get all o
 
 The examples below assume the usual prefixes: `wsdl` for `http://schemas.xmlsoap.org/wsdl/`, `soap` for `http://schemas.xmlsoap.org/wsdl/soap/`, `soap12` for `http://schemas.xmlsoap.org/wsdl/soap12/`, `xsd` for `http://www.w3.org/2001/XMLSchema`, and `tns` for the target namespace.
 
-Only one file is checked at a time. References into a namespace that is brought in with `wsdl:import` or `xsd:import` are not checked.
+`wsdl:import`, and `xsd:import` and `xsd:include` in `wsdl:types`, are followed with Spectral's resolver, so references into imported WSDL files and schemas are checked. Imported files are not linted themselves. When an import cannot be loaded, references into its namespace are not checked.
 
 ## References
 
 ### wsdl-message-part-reference
 
-Message parts must have either an `element` or a `type`, and not both. The namespace prefix must be bound. When the QName is in the target namespace of the document, or in the target namespace of an inline schema in `wsdl:types`, the element or type must be defined there as a top-level component. Built-in XML Schema types such as `xsd:string` are always accepted. The schemas themselves are not validated.
+Message parts must have either an `element` or a `type`, and not both. The namespace prefix must be bound. When the QName is in the target namespace of the document, or in the target namespace of an inline or imported schema, the element or type must be defined there as a top-level component. Built-in XML Schema types such as `xsd:string` are always accepted. The schemas themselves are not validated.
 
 **Recommended:** Yes
 

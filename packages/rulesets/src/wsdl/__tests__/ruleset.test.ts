@@ -1,6 +1,7 @@
 import { Document } from '@stoplight/spectral-core';
 import * as Parsers from '@stoplight/spectral-parsers';
 import wsdlRuleset from '../index';
+import { Wsdl } from '../parser';
 import { createWithRules, wsdlDoc } from './__helpers__/tester';
 import { valid } from './__helpers__/valid';
 
@@ -28,9 +29,9 @@ describe('spectral:wsdl ruleset', () => {
     expect(xsd.filter(r => r.code.toString().startsWith('wsdl-'))).toEqual([]);
   });
 
-  it('registers the XML parser for .wsdl files, and sniffs WSDL in other files', () => {
+  it('registers the WSDL parser for .wsdl and .xsd files, and sniffs WSDL and XML Schema in other files', () => {
     expect(wsdlRuleset.parsers).toEqual([
-      { parser: Parsers.Xml, extensions: ['.wsdl'], test: expect.any(Function) as unknown },
+      { parser: Wsdl, extensions: ['.wsdl', '.xsd'], test: expect.any(Function) as unknown },
     ]);
     const [{ test }] = wsdlRuleset.parsers;
     expect(test(valid)).toBe(true);
@@ -39,6 +40,8 @@ describe('spectral:wsdl ruleset', () => {
     expect(test('<project><definitions xmlns="urn:other"/></project>')).toBe(false);
     expect(test('{"xml": "<definitions xmlns=\\"http://schemas.xmlsoap.org/wsdl/\\">"}')).toBe(false);
     expect(test('openapi: 3.1.0\n')).toBe(false);
+    expect(test('<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"/>')).toBe(true);
+    expect(test('<schema xmlns="urn:other"/>')).toBe(false);
   });
 
   it('surfaces syntax errors', async () => {

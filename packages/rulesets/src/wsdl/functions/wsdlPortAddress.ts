@@ -1,11 +1,21 @@
 import { createRulesetFunction } from '@stoplight/spectral-core';
 import type { IFunctionResult } from '@stoplight/spectral-core';
-import type { XmlElement } from '@stoplight/spectral-parsers';
-import { attr, attrPath, children, definitions, HTTP, isHttpBinding, reference, SOAP_NAMESPACES, WSDL } from './utils';
+import {
+  attr,
+  attrPath,
+  children,
+  definitions,
+  HTTP,
+  isHttpBinding,
+  reference,
+  SOAP_NAMESPACES,
+  WSDL,
+  WsdlDocument,
+} from './utils';
 
 // Every port must have a soap:address or soap12:address with a location.
 // Ports of an HTTP binding (http:binding) may use http:address instead.
-export default createRulesetFunction<XmlElement, null>(
+export default createRulesetFunction<WsdlDocument, null>(
   {
     input: null,
     options: null,

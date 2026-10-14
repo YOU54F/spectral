@@ -1,7 +1,6 @@
 import { createRulesetFunction } from '@stoplight/spectral-core';
 import type { IFunctionResult } from '@stoplight/spectral-core';
-import type { XmlElement } from '@stoplight/spectral-parsers';
-import { attr, attrPath, children, definitions, Located, WSDL } from './utils';
+import { attr, attrPath, children, definitions, Located, WSDL, WsdlDocument } from './utils';
 
 const KINDS: Record<string, string> = {
   message: 'Message',
@@ -25,7 +24,7 @@ function unique(items: Located[], describe: (name: string) => string, results: I
 
 // Messages, port types, bindings, services and ports must have unique names in the document,
 // operations within a port type (no overloading, WS-I BP R2304) and parts within a message.
-export default createRulesetFunction<XmlElement, null>(
+export default createRulesetFunction<WsdlDocument, null>(
   {
     input: null,
     options: null,

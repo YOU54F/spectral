@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="urn:example:a" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:c="urn:example:c">
+  <wsdl:import namespace="urn:example:c" location="does-not-exist.wsdl"/>
+  <wsdl:portType name="A">
+    <wsdl:operation name="Op">
+      <wsdl:input message="c:In"/>
+    </wsdl:operation>
+  </wsdl:portType>
+</wsdl:definitions>
