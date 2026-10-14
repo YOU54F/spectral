@@ -14,12 +14,12 @@ testRule('graphql-type-description', [
     errors: [
       {
         message: 'Types should have a description.',
-        path: ['definitions', '0'],
+        path: ['definitions', '0', 'name'],
         severity: DiagnosticSeverity.Warning,
-        range: { start: { line: 0, character: 0 }, end: { line: 0, character: 19 } },
+        range: { start: { line: 0, character: 5 }, end: { line: 0, character: 8 } },
       },
-      { path: ['definitions', '1'] },
-      { path: ['definitions', '2'] },
+      { path: ['definitions', '1', 'name'] },
+      { path: ['definitions', '2', 'name'] },
     ],
   },
 ]);

@@ -1,5 +1,5 @@
 import { Document, IRuleResult, RulesetDefinition, Spectral } from '@stoplight/spectral-core';
-import { Graphql, GraphqlParserResult } from '@stoplight/spectral-parsers';
+import { Graphql, GraphqlParserResult } from '@stoplight/spectral-parsers/graphql';
 import graphqlRuleset from '../../index';
 
 export type RuleName = keyof typeof graphqlRuleset.rules;

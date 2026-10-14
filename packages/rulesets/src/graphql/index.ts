@@ -1,8 +1,19 @@
 import { graphql } from '@stoplight/spectral-formats';
-import { casing, schema, truthy } from '@stoplight/spectral-functions';
-import { Graphql } from '@stoplight/spectral-parsers';
+import { casing, pattern, schema } from '@stoplight/spectral-functions';
+import { Graphql } from '@stoplight/spectral-parsers/graphql';
 
-import graphqlUniqueTypeNames from './functions/graphqlUniqueTypeNames';
+import graphqlDescription from './functions/graphqlDescription';
+import graphqlSchemaValid from './functions/graphqlSchemaValid';
+import graphqlUniqueNames from './functions/graphqlUniqueNames';
+
+const TYPE_DEFINITION_KINDS = [
+  'ScalarTypeDefinition',
+  'ObjectTypeDefinition',
+  'InterfaceTypeDefinition',
+  'UnionTypeDefinition',
+  'EnumTypeDefinition',
+  'InputObjectTypeDefinition',
+];
 
 const NAMED_TYPE_DEFINITIONS =
   "$.definitions[?(@.kind === 'ScalarTypeDefinition' || @.kind === 'ObjectTypeDefinition' || @.kind === 'InterfaceTypeDefinition' || @.kind === 'UnionTypeDefinition' || @.kind === 'EnumTypeDefinition' || @.kind === 'InputObjectTypeDefinition')]";
@@ -18,8 +29,7 @@ export default {
       recommended: true,
       given: NAMED_TYPE_DEFINITIONS,
       then: {
-        field: 'description',
-        function: truthy,
+        function: graphqlDescription,
       },
     },
     'graphql-field-description': {
@@ -28,8 +38,7 @@ export default {
       recommended: true,
       given: '$.definitions[*].fields[*]',
       then: {
-        field: 'description',
-        function: truthy,
+        function: graphqlDescription,
       },
     },
     'graphql-argument-description': {
@@ -41,8 +50,7 @@ export default {
         "$.definitions[?(@.kind === 'DirectiveDefinition')].arguments[*]",
       ],
       then: {
-        field: 'description',
-        function: truthy,
+        function: graphqlDescription,
       },
     },
     'graphql-enum-value-description': {
@@ -51,8 +59,7 @@ export default {
       recommended: true,
       given: '$.definitions[*].values[*]',
       then: {
-        field: 'description',
-        function: truthy,
+        function: graphqlDescription,
       },
     },
     'graphql-type-name-pascal-case': {
@@ -62,9 +69,10 @@ export default {
       recommended: true,
       given: `${NAMED_TYPE_DEFINITIONS}.name`,
       then: {
-        function: casing,
+        // Unlike casing's pascal, this allows acronyms such as URL or HTTPHeader.
+        function: pattern,
         functionOptions: {
-          type: 'pascal',
+          match: '^[A-Z][A-Za-z0-9]*$',
         },
       },
     },
@@ -101,7 +109,65 @@ export default {
       recommended: true,
       given: '$.definitions',
       then: {
-        function: graphqlUniqueTypeNames,
+        function: graphqlUniqueNames,
+        functionOptions: {
+          kinds: TYPE_DEFINITION_KINDS,
+          label: 'Type name',
+          scope: 'within the document',
+        },
+      },
+    },
+    'graphql-field-name-unique': {
+      description: 'Field names must be unique within a type, interface or input type.',
+      message: '{{error}}',
+      severity: 'error',
+      recommended: true,
+      given: '$.definitions[*].fields',
+      then: {
+        function: graphqlUniqueNames,
+        functionOptions: {
+          label: 'Field name',
+          scope: 'within its type',
+        },
+      },
+    },
+    'graphql-enum-value-unique': {
+      description: 'Enum values must be unique within an enum.',
+      message: '{{error}}',
+      severity: 'error',
+      recommended: true,
+      given: '$.definitions[*].values',
+      then: {
+        function: graphqlUniqueNames,
+        functionOptions: {
+          label: 'Enum value',
+          scope: 'within its enum',
+        },
+      },
+    },
+    'graphql-directive-name-unique': {
+      description: 'Directive names must be unique within the document.',
+      message: '{{error}}',
+      severity: 'error',
+      recommended: true,
+      given: '$.definitions',
+      then: {
+        function: graphqlUniqueNames,
+        functionOptions: {
+          kinds: ['DirectiveDefinition'],
+          label: 'Directive',
+          scope: 'within the document',
+        },
+      },
+    },
+    'graphql-schema-valid': {
+      description: 'The document must be a valid GraphQL schema.',
+      message: '{{error}}',
+      severity: 'error',
+      recommended: true,
+      given: '$',
+      then: {
+        function: graphqlSchemaValid,
       },
     },
     'graphql-deprecated-reason': {

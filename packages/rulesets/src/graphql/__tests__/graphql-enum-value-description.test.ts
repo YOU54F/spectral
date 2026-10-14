@@ -13,7 +13,7 @@ testRule('graphql-enum-value-description', [
     errors: [
       {
         message: 'Enum values should have a description.',
-        path: ['definitions', '0', 'values', '1'],
+        path: ['definitions', '0', 'values', '1', 'name'],
         severity: DiagnosticSeverity.Information,
         range: { start: { line: 3, character: 2 }, end: { line: 3, character: 5 } },
       },

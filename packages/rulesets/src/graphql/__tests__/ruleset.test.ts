@@ -1,5 +1,6 @@
 import { Document } from '@stoplight/spectral-core';
 import * as Parsers from '@stoplight/spectral-parsers';
+import { Graphql } from '@stoplight/spectral-parsers/graphql';
 import graphqlRuleset from '../index';
 import { createDocument, createWithRules, RuleName } from './__helpers__/tester';
 
@@ -47,6 +48,11 @@ describe('spectral:graphql ruleset', () => {
     ]);
   });
 
+  it('reports a syntax error without an unrecognized-format warning', async () => {
+    const results = await createWithRules(ruleNames).run(createDocument('type Query {'));
+    expect(results.map(({ code }) => code)).toEqual(['parser']);
+  });
+
   it('does not apply to non-GraphQL documents', async () => {
     const results = await createWithRules(ruleNames).run(
       new Document(JSON.stringify({ definitions: [{ name: 'lower', fields: [{}] }] }), Parsers.Json),
@@ -55,9 +61,7 @@ describe('spectral:graphql ruleset', () => {
   });
 
   it('registers the GraphQL parser for .graphql and .gql files', () => {
-    expect(graphqlRuleset.parsers).toEqual([
-      { parser: Parsers.Graphql, extensions: ['.graphql', '.graphqls', '.gql'] },
-    ]);
+    expect(graphqlRuleset.parsers).toEqual([{ parser: Graphql, extensions: ['.graphql', '.graphqls', '.gql'] }]);
   });
 
   it('every rule is documented', () => {

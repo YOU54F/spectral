@@ -1,4 +1,27 @@
-import { GraphQLError, parse as parseGraphql } from 'graphql';
+import {
+  buildASTSchema,
+  GraphQLError,
+  KnownArgumentNamesRule,
+  KnownDirectivesRule,
+  KnownTypeNamesRule,
+  LoneSchemaDefinitionRule,
+  parse as parseGraphql,
+  PossibleTypeExtensionsRule,
+  ProvidedRequiredArgumentsRule,
+  UniqueArgumentDefinitionNamesRule,
+  UniqueArgumentNamesRule,
+  UniqueDirectiveNamesRule,
+  UniqueDirectivesPerLocationRule,
+  UniqueEnumValueNamesRule,
+  UniqueFieldDefinitionNamesRule,
+  UniqueInputFieldNamesRule,
+  UniqueOperationTypesRule,
+  UniqueTypeNamesRule,
+  validateSchema,
+  visit,
+  visitInParallel,
+} from 'graphql';
+import type { ASTNode, ASTVisitor, DocumentNode } from 'graphql';
 import { DiagnosticSeverity } from '@stoplight/types';
 import type { IDiagnostic, IParserResult, IPosition, IRange, JsonPath, Segment } from '@stoplight/types';
 import { IParser } from './types';
@@ -16,18 +39,31 @@ type GraphqlNode = { kind: string; loc?: { start: number; end: number } } & Reco
 const isNode = (value: unknown): value is GraphqlNode =>
   typeof value === 'object' && value !== null && typeof (value as GraphqlNode).kind === 'string';
 
+// The graphql-js DocumentNode and the JSON path of each of its nodes, kept on the plain document as a
+// non-enumerable property so that rules can validate the schema without re-parsing the source.
+const GRAPHQL_AST = Symbol.for('@stoplight/spectral-parsers/graphql');
+
+type GraphqlAst = { document: DocumentNode; paths: WeakMap<object, Segment[]> };
+
 const pathKey = (path: readonly Segment[]): string => JSON.stringify(path.map(String));
 
 // Converts graphql-js AST nodes into plain objects without `loc`.
 // Name nodes and `description` string values become plain strings, so `$.definitions[*].name` is the type name.
-function toPlain(value: unknown, path: Segment[], locations: GraphqlLocations): unknown {
+function toPlain(
+  value: unknown,
+  path: Segment[],
+  locations: GraphqlLocations,
+  paths: WeakMap<object, Segment[]>,
+): unknown {
   if (Array.isArray(value)) {
-    return value.map((item, i) => toPlain(item, [...path, i], locations));
+    return value.map((item, i) => toPlain(item, [...path, i], locations, paths));
   }
 
   if (!isNode(value)) {
     return value;
   }
+
+  paths.set(value, path);
 
   if (value.loc !== void 0) {
     locations.set(pathKey(path), [value.loc.start, value.loc.end]);
@@ -40,7 +76,7 @@ function toPlain(value: unknown, path: Segment[], locations: GraphqlLocations): 
   const plain: Record<string, unknown> = {};
   for (const [key, child] of Object.entries(value)) {
     if (key === 'loc' || child === void 0) continue;
-    plain[key] = toPlain(child, [...path, key], locations);
+    plain[key] = toPlain(child, [...path, key], locations, paths);
   }
 
   return plain;
@@ -79,7 +115,11 @@ export const parseGraphqlDocument = (input: string): GraphqlParserResult => {
 
   let data: GraphqlDocument | undefined;
   try {
-    data = toPlain(parseGraphql(input), [], ast) as GraphqlDocument;
+    const document = parseGraphql(input);
+    const paths = new WeakMap<object, Segment[]>();
+    data = toPlain(document, [], ast, paths) as GraphqlDocument;
+    const graphqlAst: GraphqlAst = { document, paths };
+    Object.defineProperty(data, GRAPHQL_AST, { value: graphqlAst });
   } catch (e) {
     const position =
       e instanceof GraphQLError && e.positions !== void 0 && e.positions.length > 0
@@ -118,3 +158,87 @@ export const Graphql: IParser<GraphqlParserResult> = {
   getLocationForJsonPath: getLocationForGraphqlPath,
   trapAccess: obj => obj,
 };
+
+// graphql-js `specifiedSDLRules`, split into the uniqueness rules, which the spectral:graphql ruleset covers
+// with rules of its own, and the rest.
+const UNIQUENESS_RULES = [
+  UniqueTypeNamesRule,
+  UniqueEnumValueNamesRule,
+  UniqueFieldDefinitionNamesRule,
+  UniqueDirectiveNamesRule,
+];
+
+// KnownArgumentNamesRule and ProvidedRequiredArgumentsRule stand in for their `OnDirectives` SDL variants, which
+// graphql-js does not export. Their extra checks only apply to fields of executable documents.
+const SDL_RULES = [
+  LoneSchemaDefinitionRule,
+  UniqueOperationTypesRule,
+  UniqueArgumentDefinitionNamesRule,
+  KnownTypeNamesRule,
+  KnownDirectivesRule,
+  UniqueDirectivesPerLocationRule,
+  PossibleTypeExtensionsRule,
+  KnownArgumentNamesRule,
+  UniqueArgumentNamesRule,
+  UniqueInputFieldNamesRule,
+  ProvidedRequiredArgumentsRule,
+];
+
+type SDLContext = {
+  getDocument(): DocumentNode;
+  getSchema(): undefined;
+  reportError(error: GraphQLError): void;
+  getArgument(): undefined;
+  getFieldDef(): undefined;
+  getParentType(): undefined;
+};
+type SDLRule = (context: never) => ASTVisitor;
+
+// Equivalent to graphql-js `validateSDL` without a schema to extend, which graphql-js does not export.
+// SDL rules only use getDocument, getSchema and reportError; the rest are for the executable rules above.
+function validateSDL(document: DocumentNode, rules: SDLRule[]): GraphQLError[] {
+  const errors: GraphQLError[] = [];
+  const context: SDLContext = {
+    getDocument: () => document,
+    getSchema: () => void 0,
+    reportError: error => void errors.push(error),
+    getArgument: () => void 0,
+    getFieldDef: () => void 0,
+    getParentType: () => void 0,
+  };
+  visit(document, visitInParallel(rules.map(rule => (rule as (context: SDLContext) => ASTVisitor)(context))));
+  return errors;
+}
+
+// A file may hold part of a larger schema, so a missing Query type is not reported.
+const IGNORED_SCHEMA_ERRORS = new Set(['Query root type must be provided.']);
+
+export type GraphqlSchemaError = { message: string; path: Segment[] };
+
+/**
+ * Validates a document produced by the Graphql parser as a standalone schema, the way graphql-js
+ * `buildASTSchema` and `validateSchema` do: unknown types and directives, invalid extensions,
+ * interface conformance and so on. Duplicate type, field, enum value and directive names are left to the
+ * uniqueness rules. Returns `undefined` when the document was not produced by the Graphql parser.
+ */
+export function validateGraphqlSchema(data: unknown): GraphqlSchemaError[] | undefined {
+  const graphqlAst =
+    typeof data === 'object' && data !== null ? (data as { [GRAPHQL_AST]?: GraphqlAst })[GRAPHQL_AST] : void 0;
+  if (graphqlAst === void 0) return void 0;
+
+  const { document, paths } = graphqlAst;
+  const toResult = (error: GraphQLError): GraphqlSchemaError => {
+    const node: ASTNode | undefined = error.nodes?.find(node => paths.has(node));
+    return { message: error.message, path: node === void 0 ? [] : (paths.get(node) ?? []) };
+  };
+
+  const errors = validateSDL(document, SDL_RULES);
+  if (errors.length > 0) return errors.map(toResult);
+
+  // buildASTSchema needs valid SDL, including unique names.
+  if (validateSDL(document, UNIQUENESS_RULES).length > 0) return [];
+
+  return validateSchema(buildASTSchema(document, { assumeValidSDL: true }))
+    .filter(error => !IGNORED_SCHEMA_ERRORS.has(error.message))
+    .map(toResult);
+}

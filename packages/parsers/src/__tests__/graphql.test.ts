@@ -1,5 +1,5 @@
 import { DiagnosticSeverity } from '@stoplight/types';
-import { Graphql } from '../graphql';
+import { Graphql, validateGraphqlSchema } from '../graphql';
 
 const sdl = `"""
 The query root
@@ -116,6 +116,44 @@ describe('GraphQL Parser', () => {
 
     expect(Graphql.getLocationForJsonPath(result, ['definitions', 0, 'fields', 0, 'name'])).toEqual({
       range: { start: { line: 1, character: 2 }, end: { line: 1, character: 3 } },
+    });
+  });
+
+  describe('validateGraphqlSchema', () => {
+    it('keeps the AST out of the plain data', () => {
+      const { data } = Graphql.parse('type Query { id: ID }');
+      expect(Object.keys(data!)).toEqual(['kind', 'definitions']);
+      expect(JSON.parse(JSON.stringify(data))).toEqual(data);
+    });
+
+    it('returns no errors for a valid schema', () => {
+      expect(validateGraphqlSchema(Graphql.parse('type Query { status: Status }\nenum Status { SOLD }').data)).toEqual(
+        [],
+      );
+    });
+
+    it('maps errors to JSON paths', () => {
+      const { data } = Graphql.parse(
+        'type Query { pet: Unicorn }\ninterface Node { id: ID! }\ntype Pet implements Node { a: Int }',
+      );
+      expect(validateGraphqlSchema(data)).toEqual([
+        { message: 'Unknown type "Unicorn".', path: ['definitions', 0, 'fields', 0, 'type'] },
+      ]);
+    });
+
+    it('reports schema errors once the SDL is valid', () => {
+      const { data } = Graphql.parse('interface Node { id: ID! }\ntype Pet implements Node { a: Int }');
+      expect(validateGraphqlSchema(data)).toEqual([
+        {
+          message: 'Interface field Node.id expected but Pet does not provide it.',
+          path: ['definitions', 0, 'fields', 0],
+        },
+      ]);
+    });
+
+    it('returns undefined for data the parser did not produce', () => {
+      expect(validateGraphqlSchema({ kind: 'Document', definitions: [] })).toBeUndefined();
+      expect(validateGraphqlSchema(void 0)).toBeUndefined();
     });
   });
 });

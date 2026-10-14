@@ -134,8 +134,8 @@ describe('Linter service', () => {
         documentationUrl:
           'https://meta.stoplight.io/docs/spectral/docs/reference/graphql-rules.md#graphql-type-description',
         message: 'Types should have a description.',
-        path: ['definitions', '1'],
-        range: { start: { line: 6, character: 0 }, end: { line: 9, character: 1 } },
+        path: ['definitions', '1', 'name'],
+        range: { start: { line: 6, character: 5 }, end: { line: 6, character: 8 } },
         severity: DiagnosticSeverity.Warning,
         source,
       },

@@ -65,4 +65,12 @@ rules:
 
 Use the `graphql` format to target GraphQL documents in your own rules.
 
+If you write a JavaScript ruleset without extending `spectral:graphql`, import the parser from its own entry point:
+
+```js
+import { Graphql } from "@stoplight/spectral-parsers/graphql";
+```
+
+It is not part of the main `@stoplight/spectral-parsers` entry point, so bundles that do not lint GraphQL do not include graphql-js.
+
 You can see a full list of the rules in this ruleset in [GraphQL Rules](../reference/graphql-rules.md).

@@ -14,11 +14,11 @@ testRule('graphql-argument-description', [
     errors: [
       {
         message: 'Field and directive arguments should have a description.',
-        path: ['definitions', '0', 'fields', '0', 'arguments', '0'],
+        path: ['definitions', '0', 'fields', '0', 'arguments', '0', 'name'],
         severity: DiagnosticSeverity.Information,
-        range: { start: { line: 1, character: 6 }, end: { line: 1, character: 13 } },
+        range: { start: { line: 1, character: 6 }, end: { line: 1, character: 8 } },
       },
-      { path: ['definitions', '1', 'arguments', '0'] },
+      { path: ['definitions', '1', 'arguments', '0', 'name'] },
     ],
   },
 ]);
