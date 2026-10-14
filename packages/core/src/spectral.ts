@@ -48,10 +48,11 @@ export class Spectral {
 
     const document = this.parseDocument(target);
 
-    const inventory = new DocumentInventory(document, this._resolver);
-    await inventory.resolve({ unresolvedPaths: this._getUnresolvedPaths(document, ruleset.formats) });
-
     const candidateFormats = this.ruleset.formats;
+
+    const inventory = new DocumentInventory(document, this._resolver);
+    await inventory.resolve({ unresolvedPaths: this._getUnresolvedPaths(document, candidateFormats) });
+
     let unrecognizedFormat = false;
 
     if (document.formats === void 0) {
