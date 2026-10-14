@@ -562,7 +562,7 @@ Other formats such as OpenAPI Schema Object and JSON Schema Draft 07 will be add
 
 Avro payloads must be valid Avro schemas. A payload is treated as Avro when the message's `schemaFormat` is an Avro schema format: `application/vnd.apache.avro;version=1.9.0`, the `+json` and `+yaml` variants, or other `1.x` versions such as `1.8.2`.
 
-The payload is checked with the structural schema and the semantic checks from the [Avro ruleset](avro-rules.md): names, name and field name uniqueness, type references, field defaults, enum symbols, unions and logical types. Problems are reported at their location inside the payload, using the same messages as the matching `avro-*` rules. Unlike in `spectral:avro`, invalid logical types are reported as errors here.
+The payload is checked with the structural schema and the semantic checks from the [Avro ruleset](avro-rules.md): names, name and field name uniqueness, type references, field defaults, enum symbols and unions. Problems are reported at their location inside the payload, using the same messages as the matching `avro-*` rules. Logical-type problems are reported separately, as warnings, by [asyncapi-payload-avro-logical-type](#asyncapi-payload-avro-logical-type).
 
 **Recommended:** Yes
 
@@ -600,6 +600,33 @@ components:
           - name: email
             type: ["null", "string"]
             default: null
+```
+
+### asyncapi-payload-avro-logical-type
+
+Logical types in Avro payloads should be well-formed. This applies the [avro-logical-type-valid](avro-rules.md#avro-logical-type-valid) checks to payloads that [asyncapi-payload-avro](#asyncapi-payload-avro) validates: each logical type must annotate the right underlying type with valid attributes, and `logicalType` must be set on a field's type rather than on the field. Avro implementations ignore an invalid logical type and fall back to the underlying type, so this rule is a warning.
+
+**Recommended:** Yes
+
+**Default severity when enabled:** warn
+
+**Bad Example**
+
+```yaml
+components:
+  messages:
+    userSignedUp:
+      schemaFormat: application/vnd.apache.avro;version=1.9.0
+      payload:
+        type: record
+        name: Payment
+        fields:
+          - name: amount
+            type:
+              type: bytes
+              logicalType: decimal
+              precision: 2
+              scale: 5 # Scale can't be greater than precision
 ```
 
 ### asyncapi-payload
@@ -886,7 +913,7 @@ Other formats such as OpenAPI Schema Object and JSON Schema Draft 07 will be add
 
 Avro payloads must be valid Avro schemas. A payload is treated as Avro when the Multi Format Schema Object's `schemaFormat` is an Avro schema format: `application/vnd.apache.avro;version=1.9.0`, the `+json` and `+yaml` variants, or other `1.x` versions such as `1.8.2`.
 
-The payload is checked with the structural schema and the semantic checks from the [Avro ruleset](avro-rules.md): names, name and field name uniqueness, type references, field defaults, enum symbols, unions and logical types. Problems are reported at their location inside the payload, using the same messages as the matching `avro-*` rules. Unlike in `spectral:avro`, invalid logical types are reported as errors here.
+The payload is checked with the structural schema and the semantic checks from the [Avro ruleset](avro-rules.md): names, name and field name uniqueness, type references, field defaults, enum symbols and unions. Problems are reported at their location inside the payload, using the same messages as the matching `avro-*` rules. Logical-type problems are reported separately, as warnings, by [asyncapi-3-payload-avro-logical-type](#asyncapi-3-payload-avro-logical-type).
 
 **Recommended:** Yes
 
@@ -922,6 +949,34 @@ components:
           fields:
             - name: userId
               type: string
+```
+
+### asyncapi-3-payload-avro-logical-type
+
+Logical types in Avro payloads should be well-formed. This applies the [avro-logical-type-valid](avro-rules.md#avro-logical-type-valid) checks to payloads that [asyncapi-3-payload-avro](#asyncapi-3-payload-avro) validates: each logical type must annotate the right underlying type with valid attributes, and `logicalType` must be set on a field's type rather than on the field. Avro implementations ignore an invalid logical type and fall back to the underlying type, so this rule is a warning.
+
+**Recommended:** Yes
+
+**Default severity when enabled:** warn
+
+**Bad Example**
+
+```yaml
+components:
+  messages:
+    userSignedUp:
+      payload:
+        schemaFormat: application/vnd.apache.avro;version=1.9.0
+        schema:
+          type: record
+          name: Payment
+          fields:
+            - name: amount
+              type:
+                type: bytes
+                logicalType: decimal
+                precision: 2
+                scale: 5 # Scale can't be greater than precision
 ```
 
 ### asyncapi-3-server-no-empty-variable
