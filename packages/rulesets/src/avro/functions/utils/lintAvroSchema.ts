@@ -40,7 +40,11 @@ export function lintAvroSchema(
   const results: IFunctionResult[] = [];
 
   const selected =
-    checks === 'structure' ? CHECKS : checks === 'logicalTypes' ? LOGICAL_TYPE_CHECKS : [...CHECKS, ...LOGICAL_TYPE_CHECKS];
+    checks === 'structure'
+      ? CHECKS
+      : checks === 'logicalTypes'
+        ? LOGICAL_TYPE_CHECKS
+        : [...CHECKS, ...LOGICAL_TYPE_CHECKS];
 
   for (const check of selected) {
     const checkResults = check(schema, null, context);
