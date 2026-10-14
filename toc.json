@@ -40,6 +40,11 @@
       "uri": "/docs/getting-started/5-asyncapi.md"
     },
     {
+      "type": "item",
+      "title": "OpenAPI Overlay Support",
+      "uri": "/docs/getting-started/9-overlay.md"
+    },
+    {
       "type": "divider",
       "title": "guides"
     },

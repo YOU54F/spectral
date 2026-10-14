@@ -15,7 +15,7 @@ Spectral comes with four built-in rulesets:
 - `spectral:oas` - [OpenAPI v2/v3 rules](./4-openapi.md)
 - `spectral:asyncapi` - [AsyncAPI v2/v3 rules](./5-asyncapi.md)
 - `spectral:arazzo` - [Arazzo v1 rules](./6-arazzo.md)
-- `spectral:overlay` - [OpenAPI Overlay v1 rules](./7-overlay.md)
+- `spectral:overlay` - [OpenAPI Overlay v1 rules](./9-overlay.md)
 
 To create a ruleset that extends both rulesets, open your terminal and run:
 
