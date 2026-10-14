@@ -4,6 +4,7 @@ import { serveAssets } from '@stoplight/spectral-test-utils';
 import { DiagnosticSeverity } from '@stoplight/types';
 import wsdlRuleset from '../index';
 import { Wsdl } from '../parser';
+import { definitions, WsdlDocument } from '../functions/utils';
 import { createWithRules } from './__helpers__/tester';
 
 const ruleNames = Object.keys(wsdlRuleset.rules) as Array<keyof typeof wsdlRuleset.rules>;
@@ -69,6 +70,19 @@ describe('spectral:wsdl imports', () => {
         path: ['root', 'children', '1', 'children', '0', 'children', '1', 'attributes', 'message', 'value'],
       }),
     ]);
+  });
+
+  it('handles an import cycle that comes back as a copy of the root document', () => {
+    // A resolver may hand back a copy of the root, with its own imports left unloaded, rather than the root itself.
+    const parse = (name: string): WsdlDocument => Wsdl.parse(fs.readFileSync(fixture(name), 'utf8')).data;
+    const a = parse('cycle-a.wsdl');
+    const b = parse('cycle-b.wsdl');
+    a.imports = [b];
+    b.imports = [parse('cycle-a.wsdl')];
+
+    const defs = definitions(a, []);
+    expect([...defs.wsdlNamespaces]).toEqual(['urn:example:a', 'urn:example:b']);
+    expect([...defs.unchecked]).toEqual([]);
   });
 
   it('reports imports that cannot be loaded, and does not check references into their namespace', async () => {
