@@ -1,8 +1,9 @@
-import type { RulesetFunctionContext } from '@stoplight/spectral-core';
+import type { IFunctionResult, RulesetFunctionContext } from '@stoplight/spectral-core';
 import arazzoDocumentSchema from '../arazzoDocumentSchema';
 import { arazzo1_0 } from '@stoplight/spectral-formats';
 
-function runSchema(target: unknown, context?: Partial<RulesetFunctionContext>) {
+// arazzoDocumentSchema is synchronous and returns an array for the arazzo formats used here
+function runSchema(target: unknown, context?: Partial<RulesetFunctionContext>): IFunctionResult[] {
   return arazzoDocumentSchema(target, null, {
     path: [],
     documentInventory: {},
@@ -15,7 +16,7 @@ function runSchema(target: unknown, context?: Partial<RulesetFunctionContext>) {
       data: target,
     },
     ...context,
-  } as RulesetFunctionContext);
+  } as RulesetFunctionContext) as IFunctionResult[];
 }
 
 describe('arazzoDocumentSchema', () => {
@@ -300,21 +301,21 @@ describe('arazzoDocumentSchema', () => {
 
   test.each([
     // without stepId/workflowId the current step is retried
-    [{ name: 'retryCurrent', type: 'retry' }],
-    [{ name: 'retryCurrent', type: 'retry', retryAfter: 1, retryLimit: 3 }],
-    [{ name: 'retryCurrent', type: 'retry', retryLimit: 3 }],
-    [{ name: 'retryAfterStep', type: 'retry', stepId: 'step2', retryAfter: 1 }],
-    [{ name: 'retryAfterWorkflow', type: 'retry', workflowId: 'workflow1' }],
-    [{ name: 'gotoStep', type: 'goto', stepId: 'step2' }],
-    [{ name: 'endAction', type: 'end' }],
+    { name: 'retryCurrent', type: 'retry' },
+    { name: 'retryCurrent', type: 'retry', retryAfter: 1, retryLimit: 3 },
+    { name: 'retryCurrent', type: 'retry', retryLimit: 3 },
+    { name: 'retryAfterStep', type: 'retry', stepId: 'step2', retryAfter: 1 },
+    { name: 'retryAfterWorkflow', type: 'retry', workflowId: 'workflow1' },
+    { name: 'gotoStep', type: 'goto', stepId: 'step2' },
+    { name: 'endAction', type: 'end' },
   ])('should pass for a valid Failure Action Object %j', action => {
     expect(runSchema(docWithFailureAction(action))).toHaveLength(0);
   });
 
   test.each([
-    [{ name: 'gotoNothing', type: 'goto' }],
-    [{ name: 'retryNegative', type: 'retry', retryAfter: -1 }],
-    [{ name: 'endWithStep', type: 'end', stepId: 'step2' }],
+    { name: 'gotoNothing', type: 'goto' },
+    { name: 'retryNegative', type: 'retry', retryAfter: -1 },
+    { name: 'endWithStep', type: 'end', stepId: 'step2' },
   ])('should fail for an invalid Failure Action Object %j', action => {
     expect(runSchema(docWithFailureAction(action)).length).toBeGreaterThan(0);
   });
