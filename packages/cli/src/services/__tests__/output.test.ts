@@ -1,4 +1,5 @@
 import { DiagnosticSeverity } from '@stoplight/types';
+import { Ruleset } from '@stoplight/spectral-core';
 import * as fs from 'fs';
 import * as process from 'process';
 import * as formatters from '@stoplight/spectral-formatters';
@@ -39,7 +40,15 @@ describe('Output service', () => {
 
       const output = `value for ${format}`;
       (formatters[format] as jest.Mock).mockReturnValueOnce(output);
-      expect(formatOutput(results, format as OutputFormat, { failSeverity: DiagnosticSeverity.Error })).toEqual(output);
+      const ruleset = new Ruleset({ rules: {} });
+      expect(
+        formatOutput(results, format as OutputFormat, { failSeverity: DiagnosticSeverity.Error }, ruleset),
+      ).toEqual(output);
+      expect(formatters[format]).toHaveBeenCalledWith(
+        results,
+        { failSeverity: DiagnosticSeverity.Error },
+        expect.objectContaining({ ruleset }),
+      );
     });
   });
 
