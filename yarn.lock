@@ -3623,7 +3623,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@stoplight/spectral-parsers@*, @stoplight/spectral-parsers@>=1, @stoplight/spectral-parsers@^1.0.4, @stoplight/spectral-parsers@workspace:packages/parsers":
+"@stoplight/spectral-parsers@*, @stoplight/spectral-parsers@>=1, @stoplight/spectral-parsers@^1.0.4, @stoplight/spectral-parsers@^1.0.5, @stoplight/spectral-parsers@workspace:packages/parsers":
   version: 0.0.0-use.local
   resolution: "@stoplight/spectral-parsers@workspace:packages/parsers"
   dependencies:
@@ -3712,7 +3712,7 @@ __metadata:
     "@stoplight/spectral-core": ^1.23.0
     "@stoplight/spectral-formats": ^1.8.1
     "@stoplight/spectral-functions": ^1.9.1
-    "@stoplight/spectral-parsers": "*"
+    "@stoplight/spectral-parsers": ^1.0.5
     "@stoplight/spectral-ref-resolver": ^1.0.4
     "@stoplight/spectral-runtime": ^1.1.2
     "@stoplight/types": ^13.6.0

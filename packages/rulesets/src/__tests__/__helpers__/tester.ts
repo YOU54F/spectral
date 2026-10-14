@@ -4,8 +4,9 @@ import { httpAndFileResolver } from '@stoplight/spectral-ref-resolver';
 import oasRuleset from '../../oas/index';
 import aasRuleset from '../../asyncapi/index';
 import arazzoRuleset from '../../arazzo/index';
+import wsdlRuleset from '../../wsdl/index';
 
-type Ruleset = typeof oasRuleset & typeof aasRuleset;
+type Ruleset = typeof oasRuleset & typeof aasRuleset & typeof wsdlRuleset;
 export type RuleName = keyof Ruleset['rules'];
 
 type Scenario = ReadonlyArray<
@@ -45,6 +46,7 @@ export function createWithRules(rules: (keyof Ruleset['rules'])[]): Spectral {
       [aasRuleset as RulesetDefinition, 'off'],
       [oasRuleset as RulesetDefinition, 'off'],
       [arazzoRuleset as RulesetDefinition, 'off'],
+      [wsdlRuleset as RulesetDefinition, 'off'],
     ],
     rules: rules.reduce((obj, name) => {
       obj[name] = true;
