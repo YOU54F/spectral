@@ -12,7 +12,10 @@ import { IParser } from './types';
 // It produces a plain JSON-friendly tree and keeps a range for every node and every scalar property,
 // so that Spectral can report precise locations. Syntax errors become diagnostics instead of exceptions.
 
-export type ProtobufOptionValue = string | number | boolean;
+// A value of a text-format message literal, i.e. the `{ ... }` of an aggregate option value.
+export type ProtobufTextValue = string | number | boolean | ProtobufTextValue[] | { [key: string]: ProtobufTextValue };
+// Aggregate option values are parsed into an object; if that fails they are kept as raw text.
+export type ProtobufOptionValue = string | number | boolean | { [key: string]: ProtobufTextValue };
 export type ProtobufOptions = Record<string, ProtobufOptionValue>;
 
 export type ProtobufReserved = {
@@ -29,6 +32,7 @@ export type ProtobufField = {
   valueType?: string;
   options: ProtobufOptions;
   comment?: string;
+  trailingComment?: string;
 };
 
 export type ProtobufOneof = {
@@ -36,6 +40,7 @@ export type ProtobufOneof = {
   fields: ProtobufField[];
   options: ProtobufOptions;
   comment?: string;
+  trailingComment?: string;
 };
 
 export type ProtobufEnumValue = {
@@ -43,6 +48,7 @@ export type ProtobufEnumValue = {
   number: number;
   options: ProtobufOptions;
   comment?: string;
+  trailingComment?: string;
 };
 
 export type ProtobufEnum = {
@@ -51,12 +57,14 @@ export type ProtobufEnum = {
   options: ProtobufOptions;
   reserved: ProtobufReserved;
   comment?: string;
+  trailingComment?: string;
 };
 
 export type ProtobufExtend = {
   extendee: string;
   fields: ProtobufField[];
   comment?: string;
+  trailingComment?: string;
 };
 
 export type ProtobufMessage = {
@@ -70,6 +78,7 @@ export type ProtobufMessage = {
   extensions: ProtobufReserved['ranges'];
   options: ProtobufOptions;
   comment?: string;
+  trailingComment?: string;
 };
 
 export type ProtobufRpc = {
@@ -80,6 +89,7 @@ export type ProtobufRpc = {
   responseStream: boolean;
   options: ProtobufOptions;
   comment?: string;
+  trailingComment?: string;
 };
 
 export type ProtobufService = {
@@ -87,6 +97,7 @@ export type ProtobufService = {
   rpcs: ProtobufRpc[];
   options: ProtobufOptions;
   comment?: string;
+  trailingComment?: string;
 };
 
 export type ProtobufDocument = {
@@ -113,6 +124,7 @@ type Token = {
   value: string;
   range: IRange;
   comment?: string;
+  trailingComment?: string;
 };
 
 type Comment = { text: string; startLine: number; endLine: number };
@@ -179,14 +191,20 @@ function tokenize(input: string, diagnostics: IDiagnostic[]): { tokens: Token[];
 
     const start = position();
 
+    // A comment that starts on the line the previous token ends on trails that token instead of leading the next one.
+    const addComment = (text: string): void => {
+      const previous = tokens[tokens.length - 1];
+      if (previous !== void 0 && start.line === lastTokenLine) {
+        previous.trailingComment = previous.trailingComment === void 0 ? text : `${previous.trailingComment}\n${text}`;
+      } else {
+        pending.push({ text, startLine: start.line, endLine: line });
+      }
+    };
+
     if (ch === '/' && input[pos + 1] === '/') {
       const begin = pos;
       while (pos < input.length && input[pos] !== '\n') advance();
-      pending.push({
-        text: cleanComment(input.slice(begin, pos).trimEnd(), false),
-        startLine: start.line,
-        endLine: line,
-      });
+      addComment(cleanComment(input.slice(begin, pos).trimEnd(), false));
       continue;
     }
 
@@ -202,7 +220,7 @@ function tokenize(input: string, diagnostics: IDiagnostic[]): { tokens: Token[];
         advance();
       }
 
-      pending.push({ text: cleanComment(input.slice(begin, pos), true), startLine: start.line, endLine: line });
+      addComment(cleanComment(input.slice(begin, pos), true));
       continue;
     }
 
@@ -273,6 +291,16 @@ function tokenize(input: string, diagnostics: IDiagnostic[]): { tokens: Token[];
 
 function error(message: string, range: IRange): IDiagnostic {
   return { code: 'parser', message, range, severity: DiagnosticSeverity.Error };
+}
+
+function warning(message: string, range: IRange): IDiagnostic {
+  return { code: 'parser', message, range, severity: DiagnosticSeverity.Warning };
+}
+
+// { trailingComment } of the first token that has one, to spread into a node
+function trailing(...tokens: Token[]): { trailingComment?: string } {
+  const token = tokens.find(t => t.trailingComment !== void 0);
+  return token === void 0 ? {} : { trailingComment: token.trailingComment };
 }
 
 class ProtobufSyntaxError extends Error {
@@ -493,14 +521,21 @@ class Parser {
         this.expect('=');
         const { value, first, last } = this.string();
         const end = this.expect(';');
+        const range = { start: first.range.start, end: last.range.end };
         if (token.value === 'syntax') {
           doc.syntax = value;
           this.set(['syntax'], first, last);
+          if (value !== 'proto2' && value !== 'proto3') {
+            this.diagnostics.push(warning(`Unknown syntax "${value}", expected "proto2" or "proto3"`, range));
+          }
         } else {
           doc.syntax = 'editions';
           doc.edition = value;
           this.set(['syntax'], token, end);
           this.set(['edition'], first, last);
+          if (!/^[0-9]{4}$/.test(value)) {
+            this.diagnostics.push(warning(`Unknown edition "${value}", expected a year such as "2023"`, range));
+          }
         }
 
         return;
@@ -588,17 +623,19 @@ class Parser {
     if (token.type === 'string') return this.string().value;
 
     if (this.is('{')) {
-      // aggregate (text format) value, kept as raw text
-      const parts: string[] = [];
+      // aggregate (text format) value: parsed into an object, or kept as raw text if that fails
+      const tokens: Token[] = [];
       let depth = 0;
       do {
         const t = this.next();
         if (t.type === 'eof') this.fail('"}"', t);
         if (this.is('{', t)) depth++;
         if (this.is('}', t)) depth--;
-        parts.push(t.type === 'string' ? JSON.stringify(t.value) : t.value);
+        tokens.push(t);
       } while (depth > 0);
-      return parts.join(' ');
+      return (
+        parseTextFormat(tokens) ?? tokens.map(t => (t.type === 'string' ? JSON.stringify(t.value) : t.value)).join(' ')
+      );
     }
 
     if (this.is('-') || this.is('+') || token.type === 'number') {
@@ -652,12 +689,12 @@ class Parser {
     const message = newMessage(name.value, start.comment);
     messages.push(message);
     this.set([...path, 'name'], name);
-    this.expect('{');
-    this.messageBody(message, path, start);
+    const open = this.expect('{');
+    this.messageBody(message, path, start, open);
   }
 
   // Parses the statements of a message after its "{"; `start` is the token the message declaration begins with.
-  private messageBody(message: ProtobufMessage, path: JsonPath, start: Token): void {
+  private messageBody(message: ProtobufMessage, path: JsonPath, start: Token, open: Token): void {
     const end = this.block(() => {
       const token = this.peek;
       switch (token.value) {
@@ -700,6 +737,7 @@ class Parser {
 
       this.field(message.fields, [...path, 'fields'], message, path);
     });
+    Object.assign(message, trailing(open, end));
     this.set(path, start, end);
   }
 
@@ -735,8 +773,8 @@ class Parser {
       const nested = newMessage(groupName.value, start.comment);
       message.messages.push(nested);
       this.set([...nestedPath, 'name'], groupName);
-      this.expect('{');
-      this.messageBody(nested, nestedPath, start);
+      const open = this.expect('{');
+      this.messageBody(nested, nestedPath, start, open);
       fields.push({
         name: groupName.value.toLowerCase(),
         type: groupName.value,
@@ -744,6 +782,7 @@ class Parser {
         ...(label !== void 0 && { label }),
         options,
         ...(start.comment !== void 0 && { comment: start.comment }),
+        ...trailing(open, this.prev()),
       });
       this.set([...path, 'name'], groupName);
       this.set([...path, 'type'], groupName);
@@ -785,6 +824,7 @@ class Parser {
       ...(keyType !== void 0 && { keyType, valueType }),
       options,
       ...(start.comment !== void 0 && { comment: start.comment }),
+      ...trailing(end),
     });
     this.set([...path, 'name'], name);
     this.set([...path, 'number'], number.first, number.last);
@@ -803,7 +843,7 @@ class Parser {
     };
     message.oneofs.push(oneof);
     this.set([...path, 'name'], name);
-    this.expect('{');
+    const open = this.expect('{');
     const end = this.block(() => {
       if (this.is('option')) {
         this.option(oneof.options, [...path, 'options']);
@@ -811,6 +851,7 @@ class Parser {
         this.field(oneof.fields, [...path, 'fields'], message, messagePath);
       }
     });
+    Object.assign(oneof, trailing(open, end));
     this.set(path, start, end);
   }
 
@@ -876,7 +917,7 @@ class Parser {
     };
     enums.push(node);
     this.set([...path, 'name'], name);
-    this.expect('{');
+    const open = this.expect('{');
     const end = this.block(() => {
       if (this.is('option')) {
         this.option(node.options, [...path, 'options']);
@@ -894,12 +935,14 @@ class Parser {
           number: number.value,
           options,
           ...(valueName.comment !== void 0 && { comment: valueName.comment }),
+          ...trailing(valueEnd),
         });
         this.set([...valuePath, 'name'], valueName);
         this.set([...valuePath, 'number'], number.first, number.last);
         this.set(valuePath, valueName, valueEnd);
       }
     });
+    Object.assign(node, trailing(open, end));
     this.set(path, start, end);
   }
 
@@ -915,7 +958,7 @@ class Parser {
     };
     services.push(service);
     this.set([...path, 'name'], name);
-    this.expect('{');
+    const open = this.expect('{');
     const end = this.block(() => {
       if (this.is('option')) {
         this.option(service.options, [...path, 'options']);
@@ -923,6 +966,7 @@ class Parser {
         this.rpc(service.rpcs, [...path, 'rpcs']);
       }
     });
+    Object.assign(service, trailing(open, end));
     this.set(path, start, end);
   }
 
@@ -962,10 +1006,12 @@ class Parser {
 
     let end: Token;
     if (this.is('{')) {
-      this.next();
+      const open = this.next();
       end = this.block(() => this.option(rpc.options, [...path, 'options']));
+      Object.assign(rpc, trailing(open, end));
     } else {
       end = this.expect(';');
+      Object.assign(rpc, trailing(end));
     }
 
     this.set(path, start, end);
@@ -982,8 +1028,9 @@ class Parser {
     };
     extendsList.push(node);
     this.set([...path, 'extendee'], extendee.first, extendee.last);
-    this.expect('{');
+    const open = this.expect('{');
     const end = this.block(() => this.field(node.fields, [...path, 'fields'], null, path));
+    Object.assign(node, trailing(open, end));
     this.set(path, start, end);
   }
 }
@@ -1001,6 +1048,131 @@ function newMessage(name: string, comment: string | undefined): ProtobufMessage 
     options: {},
     ...(comment !== void 0 && { comment }),
   };
+}
+
+// Parses the tokens of a text-format message literal (`{ a: 1, b { c: "x" }, d: [1, 2] }`), including the outer
+// braces, into an object. Repeated fields become arrays. Returns null if the tokens are not a valid literal.
+function parseTextFormat(tokens: Token[]): { [key: string]: ProtobufTextValue } | null {
+  let pos = 0;
+  const invalid = new Error();
+  const is = (value: string): boolean =>
+    pos < tokens.length && tokens[pos].type !== 'string' && tokens[pos].value === value;
+  const take = (): Token => {
+    if (pos >= tokens.length) throw invalid;
+    return tokens[pos++];
+  };
+
+  const fieldName = (): string => {
+    const token = take();
+    if (token.type === 'ident') return token.value;
+    if (token.value !== '[' || token.type !== 'symbol') throw invalid;
+    // extension or Any type URL, e.g. [foo.bar] or [type.googleapis.com/foo.Bar]
+    let name = '';
+    while (!is(']')) {
+      const t = take();
+      if (t.type === 'string') throw invalid;
+      name += t.value;
+    }
+
+    pos++;
+    return `[${name}]`;
+  };
+
+  const scalar = (): ProtobufTextValue => {
+    let token = take();
+    if (token.type === 'string') {
+      let value = token.value;
+      while (pos < tokens.length && tokens[pos].type === 'string') value += take().value;
+      return value;
+    }
+
+    let sign = 1;
+    if (token.type === 'symbol' && (token.value === '-' || token.value === '+')) {
+      sign = token.value === '-' ? -1 : 1;
+      token = take();
+      if (token.type === 'ident' && /^(?:inf|infinity|nan)$/i.test(token.value)) {
+        return /^nan$/i.test(token.value) ? NaN : sign * Infinity;
+      }
+
+      if (token.type !== 'number') throw invalid;
+    }
+
+    if (token.type === 'number') {
+      const value = parseNumber(token.value);
+      if (value === null) throw invalid;
+      return sign * value;
+    }
+
+    if (token.type === 'ident') return token.value === 'true' ? true : token.value === 'false' ? false : token.value;
+    throw invalid;
+  };
+
+  const value = (): ProtobufTextValue => {
+    if (is('{') || is('<')) {
+      const close = take().value === '{' ? '}' : '>';
+      return message(close);
+    }
+
+    return scalar();
+  };
+
+  const list = (): ProtobufTextValue[] => {
+    take(); // [
+    const items: ProtobufTextValue[] = [];
+    while (!is(']')) {
+      items.push(value());
+      if (is(',')) {
+        pos++;
+      } else if (!is(']')) {
+        throw invalid;
+      }
+    }
+
+    pos++;
+    return items;
+  };
+
+  const message = (close: string): { [key: string]: ProtobufTextValue } => {
+    const object: { [key: string]: ProtobufTextValue } = {};
+    while (!is(close)) {
+      const key = fieldName();
+      if (key === '__proto__') throw invalid;
+      let item: ProtobufTextValue;
+      if (is(':')) {
+        pos++;
+        item = is('[') ? list() : value();
+      } else if (is('{') || is('<')) {
+        item = value();
+      } else if (is('[')) {
+        item = list();
+      } else {
+        throw invalid;
+      }
+
+      if (Object.prototype.hasOwnProperty.call(object, key)) {
+        // a repeated field may be written several times
+        const existing = object[key];
+        object[key] = [...(Array.isArray(existing) ? existing : [existing]), ...(Array.isArray(item) ? item : [item])];
+      } else {
+        object[key] = item;
+      }
+
+      if (is(',') || is(';')) pos++;
+    }
+
+    pos++;
+    return object;
+  };
+
+  try {
+    if (!is('{')) return null;
+    pos++;
+    const result = message('}');
+    return pos === tokens.length ? result : null;
+  } catch (e) {
+    if (e === invalid) return null;
+    throw e;
+  }
 }
 
 function parseInteger(literal: string): number | null {

@@ -4,9 +4,12 @@ import { Protobuf } from '@stoplight/spectral-parsers';
 
 import protobufComment from './functions/protobufComment';
 import protobufEnumValueNames from './functions/protobufEnumValueNames';
+import protobufEnumValuesUnique from './functions/protobufEnumValuesUnique';
 import protobufEnumZeroValue from './functions/protobufEnumZeroValue';
 import protobufFieldNumber from './functions/protobufFieldNumber';
+import protobufFieldsUnique from './functions/protobufFieldsUnique';
 import protobufRpcTypeNames from './functions/protobufRpcTypeNames';
+import protobufTypeNamesUnique from './functions/protobufTypeNamesUnique';
 
 export default {
   documentationUrl: 'https://meta.stoplight.io/docs/spectral/docs/reference/protobuf-rules.md',
@@ -91,6 +94,65 @@ export default {
       given: '$..fields[*].number',
       then: {
         function: protobufFieldNumber,
+      },
+    },
+    'protobuf-field-numbers-unique': {
+      description: 'Field numbers must be unique within a message, including oneof fields, and must not be reserved.',
+      message: '{{error}}',
+      severity: 'error',
+      given: '$..messages[*]',
+      then: {
+        function: protobufFieldsUnique,
+        functionOptions: {
+          property: 'number',
+        },
+      },
+    },
+    'protobuf-field-names-unique': {
+      description: 'Field names must be unique within a message, including oneof fields, and must not be reserved.',
+      message: '{{error}}',
+      severity: 'error',
+      given: '$..messages[*]',
+      then: {
+        function: protobufFieldsUnique,
+        functionOptions: {
+          property: 'name',
+        },
+      },
+    },
+    'protobuf-enum-value-numbers-unique': {
+      description:
+        'Enum value numbers must be unique within an enum, unless "option allow_alias = true;" is set, and must not be reserved.',
+      message: '{{error}}',
+      severity: 'error',
+      given: '$..enums[*]',
+      then: {
+        function: protobufEnumValuesUnique,
+        functionOptions: {
+          property: 'number',
+        },
+      },
+    },
+    'protobuf-enum-value-names-unique': {
+      description: 'Enum value names must be unique within an enum and must not be reserved.',
+      message: '{{error}}',
+      severity: 'error',
+      given: '$..enums[*]',
+      then: {
+        function: protobufEnumValuesUnique,
+        functionOptions: {
+          property: 'name',
+        },
+      },
+    },
+    'protobuf-type-names-unique': {
+      description:
+        'Messages, enums and services declared in the same scope (the file or a message) must have unique names.',
+      message: '{{error}}',
+      severity: 'error',
+      given: ['$', '$..messages[*]'],
+      then: {
+        function: protobufTypeNamesUnique,
       },
     },
   },

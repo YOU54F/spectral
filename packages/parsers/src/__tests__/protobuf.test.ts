@@ -28,7 +28,7 @@ message Pet {
   reserved "old", "older";
 
   message Nested {
-    int32 x = 1; // trailing, ignored
+    int32 x = 1; // trailing
   }
 
   enum Kind {
@@ -98,6 +98,7 @@ describe('Protobuf parser', () => {
     });
     expect(pet.messages[0]).toMatchObject({ name: 'Nested', fields: [{ name: 'x', number: 1 }] });
     expect(pet.messages[0].fields[0]).not.toHaveProperty('comment');
+    expect(pet.messages[0].fields[0].trailingComment).toBe('trailing');
     expect(pet.enums[0]).toEqual({
       name: 'Kind',
       options: { allow_alias: true },
@@ -222,6 +223,93 @@ enum E { X = 0; }
       ['B', []],
     ]);
     expect(data.enums[0].values[0].name).toBe('X');
+  });
+
+  it('captures same-line trailing comments', () => {
+    const { data, diagnostics } = parseProtobuf(`// Leading.
+message A { // A trailing.
+  // a leading.
+  int32 a = 1; /* a trailing. */ // more
+  // b leading.
+  int32 b = 2;
+  // detached
+
+  oneof o { int32 c = 3; } // o trailing.
+}
+enum E { E_X = 0; } // E trailing.
+service S {
+  rpc R(A) returns (A); // R trailing.
+  rpc T(A) returns (A) { // T trailing.
+  }
+}
+`);
+    expect(diagnostics).toEqual([]);
+    const [a] = data.messages;
+    expect(a).toMatchObject({ comment: 'Leading.', trailingComment: 'A trailing.' });
+    expect(a.fields).toEqual([
+      expect.objectContaining({ name: 'a', comment: 'a leading.', trailingComment: 'a trailing.\nmore' }),
+      expect.objectContaining({ name: 'b', comment: 'b leading.' }),
+    ]);
+    expect(a.fields[1]).not.toHaveProperty('trailingComment');
+    expect(a.oneofs[0]).toMatchObject({ trailingComment: 'o trailing.' });
+    expect(a.oneofs[0]).not.toHaveProperty('comment');
+    expect(a.oneofs[0].fields[0]).not.toHaveProperty('trailingComment');
+    expect(data.enums[0]).toMatchObject({ trailingComment: 'E trailing.' });
+    expect(data.enums[0].values[0]).not.toHaveProperty('trailingComment');
+    expect(data.services[0].rpcs).toEqual([
+      expect.objectContaining({ name: 'R', trailingComment: 'R trailing.' }),
+      expect.objectContaining({ name: 'T', trailingComment: 'T trailing.' }),
+    ]);
+    expect(data.services[0]).not.toHaveProperty('trailingComment');
+  });
+
+  it('parses aggregate option values', () => {
+    const { data, diagnostics } = parseProtobuf(`
+option (a) = { name: "x" "y" count: -3 ratio: 1.5 on: true kind: FOO nested { deep: [1, 2] } list: [{ a: 1 }, { a: 2 }] };
+option (b) = { rep: 1 rep: 2, rep: [3]; [ext.field]: "e" [type.googleapis.com/foo.Bar] < v: 1 > };
+option (c) = {};
+option (d) = { broken: };
+message M {
+  string f = 1 [(validate.rules).string = { min_len: 1, max_len: 10 }];
+}
+`);
+    expect(diagnostics).toEqual([]);
+    expect(data.options).toEqual({
+      '(a)': {
+        name: 'xy',
+        count: -3,
+        ratio: 1.5,
+        on: true,
+        kind: 'FOO',
+        nested: { deep: [1, 2] },
+        list: [{ a: 1 }, { a: 2 }],
+      },
+      '(b)': { rep: [1, 2, 3], '[ext.field]': 'e', '[type.googleapis.com/foo.Bar]': { v: 1 } },
+      '(c)': {},
+      '(d)': '{ broken : }',
+    });
+    expect(data.messages[0].fields[0].options).toEqual({
+      '(validate.rules).string': { min_len: 1, max_len: 10 },
+    });
+  });
+
+  it('warns about unknown syntax and edition values', () => {
+    expect(parseProtobuf('syntax = "proto4";').diagnostics).toEqual([
+      {
+        code: 'parser',
+        message: 'Unknown syntax "proto4", expected "proto2" or "proto3"',
+        range: { start: { line: 0, character: 9 }, end: { line: 0, character: 17 } },
+        severity: DiagnosticSeverity.Warning,
+      },
+    ]);
+    expect(parseProtobuf('edition = "next";').diagnostics).toEqual([
+      expect.objectContaining({
+        message: 'Unknown edition "next", expected a year such as "2023"',
+        severity: DiagnosticSeverity.Warning,
+      }),
+    ]);
+    expect(parseProtobuf('syntax = "proto2";').diagnostics).toEqual([]);
+    expect(parseProtobuf('edition = "2024";').diagnostics).toEqual([]);
   });
 
   it('reports unterminated blocks', () => {

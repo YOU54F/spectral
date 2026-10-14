@@ -10,3 +10,8 @@ export function toUpperSnakeCase(name: string): string {
 export function lastSegment(type: string): string {
   return type.slice(type.lastIndexOf('.') + 1);
 }
+
+// Whether a number falls in one of the given (inclusive) reserved ranges, e.g. `reserved 2, 5 to 9, 100 to max;`
+export function inReservedRange(value: number, ranges: { start: number; end: number | 'max' }[]): boolean {
+  return ranges.some(({ start, end }) => value >= start && (end === 'max' || value <= end));
+}

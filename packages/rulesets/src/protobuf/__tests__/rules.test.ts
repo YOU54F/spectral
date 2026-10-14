@@ -152,3 +152,139 @@ testRule('protobuf-field-number-range', [
     ],
   },
 ]);
+
+testRule('protobuf-field-numbers-unique', [
+  { name: 'unique numbers', document: proto(valid), errors: [] },
+  {
+    name: 'duplicate and reserved numbers, also in oneofs and nested messages',
+    document: proto(
+      'message A {\n  reserved 4, 10 to 12, 100 to max;\n  int32 a = 1;\n  int32 b = 1;\n  oneof o { int32 c = 1; int32 d = 11; }\n  int32 e = 4;\n  int32 f = 200;\n  message B { int32 a = 1; int32 b = 1; }\n}\n',
+    ),
+    errors: [
+      {
+        message: 'Field number 1 of field "b" is already used by field "a".',
+        path: ['messages', '0', 'fields', '1', 'number'],
+        range: range(3, 12, 13),
+        severity: DiagnosticSeverity.Error,
+      },
+      {
+        message: 'Field number 1 of field "c" is already used by field "a".',
+        path: ['messages', '0', 'oneofs', '0', 'fields', '0', 'number'],
+      },
+      {
+        message: 'Field number 11 of field "d" is reserved.',
+        path: ['messages', '0', 'oneofs', '0', 'fields', '1', 'number'],
+      },
+      {
+        message: 'Field number 4 of field "e" is reserved.',
+        path: ['messages', '0', 'fields', '2', 'number'],
+      },
+      {
+        message: 'Field number 200 of field "f" is reserved.',
+        path: ['messages', '0', 'fields', '3', 'number'],
+      },
+      {
+        message: 'Field number 1 of field "b" is already used by field "a".',
+        path: ['messages', '0', 'messages', '0', 'fields', '1', 'number'],
+      },
+    ],
+  },
+]);
+
+testRule('protobuf-field-names-unique', [
+  { name: 'unique names', document: proto(valid), errors: [] },
+  {
+    name: 'duplicate and reserved names, also in oneofs',
+    document: proto(
+      'message A {\n  reserved "old", "older";\n  int32 a = 1;\n  int32 a = 2;\n  oneof o { int32 a = 3; }\n  int32 old = 4;\n}\n',
+    ),
+    errors: [
+      {
+        message: 'Field name "a" is already used in message "A".',
+        path: ['messages', '0', 'fields', '1', 'name'],
+        range: range(3, 8, 9),
+        severity: DiagnosticSeverity.Error,
+      },
+      {
+        message: 'Field name "a" is already used in message "A".',
+        path: ['messages', '0', 'oneofs', '0', 'fields', '0', 'name'],
+      },
+      { message: 'Field name "old" is reserved.', path: ['messages', '0', 'fields', '2', 'name'] },
+    ],
+  },
+]);
+
+testRule('protobuf-enum-value-numbers-unique', [
+  { name: 'unique numbers', document: proto(valid), errors: [] },
+  {
+    name: 'aliases are allowed with allow_alias',
+    document: proto('enum E {\n  option allow_alias = true;\n  E_UNSPECIFIED = 0;\n  E_DEFAULT = 0;\n}\n'),
+    errors: [],
+  },
+  {
+    name: 'duplicate and reserved numbers',
+    document: proto(
+      'enum E {\n  reserved 5 to max;\n  E_UNSPECIFIED = 0;\n  E_DEFAULT = 0;\n  E_BIG = 7;\n}\nmessage M { enum F { option allow_alias = false; F_A = 0; F_B = 0; } }\n',
+    ),
+    errors: [
+      {
+        message:
+          'Enum value number 0 of "E_DEFAULT" is already used by "E_UNSPECIFIED"; set "option allow_alias = true;" to allow aliases.',
+        path: ['enums', '0', 'values', '1', 'number'],
+        range: range(3, 14, 15),
+        severity: DiagnosticSeverity.Error,
+      },
+      { message: 'Enum value number 7 of "E_BIG" is reserved.', path: ['enums', '0', 'values', '2', 'number'] },
+      {
+        message:
+          'Enum value number 0 of "F_B" is already used by "F_A"; set "option allow_alias = true;" to allow aliases.',
+        path: ['messages', '0', 'enums', '0', 'values', '1', 'number'],
+      },
+    ],
+  },
+]);
+
+testRule('protobuf-enum-value-names-unique', [
+  { name: 'unique names', document: proto(valid), errors: [] },
+  {
+    name: 'duplicate and reserved names',
+    document: proto('enum E {\n  reserved "E_OLD";\n  E_A = 0;\n  E_A = 1;\n  E_OLD = 2;\n}\n'),
+    errors: [
+      {
+        message: 'Enum value name "E_A" is already used in enum "E".',
+        path: ['enums', '0', 'values', '1', 'name'],
+        range: range(3, 2, 5),
+        severity: DiagnosticSeverity.Error,
+      },
+      { message: 'Enum value name "E_OLD" is reserved.', path: ['enums', '0', 'values', '2', 'name'] },
+    ],
+  },
+]);
+
+testRule('protobuf-type-names-unique', [
+  { name: 'unique names', document: proto(valid), errors: [] },
+  {
+    name: 'same names in different scopes are fine',
+    document: proto('message A { message B {} }\nmessage B { message B {} }\n'),
+    errors: [],
+  },
+  {
+    name: 'duplicate names in the same scope',
+    document: proto(
+      'message A {}\nenum A { A_UNSPECIFIED = 0; }\nservice A {}\nmessage B { message C {} enum C { C_X = 0; } }\n',
+    ),
+    errors: [
+      {
+        message: 'Type name "A" is already defined in this scope.',
+        path: ['enums', '0', 'name'],
+        range: range(1, 5, 6),
+        severity: DiagnosticSeverity.Error,
+      },
+      { message: 'Type name "A" is already defined in this scope.', path: ['services', '0', 'name'] },
+      {
+        message: 'Type name "C" is already defined in this scope.',
+        path: ['messages', '1', 'enums', '0', 'name'],
+      },
+    ],
+  },
+]);
