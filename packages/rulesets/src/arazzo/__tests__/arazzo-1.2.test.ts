@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { DiagnosticSeverity } from '@stoplight/types';
-import { Document, Spectral } from '@stoplight/spectral-core';
+import { Document, Spectral, RulesetDefinition } from '@stoplight/spectral-core';
 import * as Parsers from '@stoplight/spectral-parsers';
 import ruleset from '../index';
 
@@ -11,7 +11,7 @@ const readFixture = (name: string) => fs.readFileSync(path.join(__dirname, '__fi
 
 async function lint(doc: string | Record<string, unknown>) {
   const spectral = new Spectral();
-  spectral.setRuleset(ruleset);
+  spectral.setRuleset(ruleset as RulesetDefinition);
   const source = typeof doc === 'string' ? doc : JSON.stringify(doc, null, 2);
   const results = await spectral.run(new Document(source, Parsers.Yaml, 'doc.arazzo.yaml'));
   return results.filter(r => r.severity === DiagnosticSeverity.Error);
