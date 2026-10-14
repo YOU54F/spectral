@@ -13,6 +13,7 @@ const REPLACEMENTS = {
   'spectral:mcp': 'mcp',
   'spectral:a2a': 'a2a',
   'spectral:overlay': 'overlay',
+  'spectral:openrpc': 'openrpc',
 };
 
 export { transformer as default };
