@@ -16,6 +16,7 @@ export * from './types';
 
 export class Spectral {
   private readonly _resolver: Resolver;
+  private readonly _parsers: Parsers.ParserRegistry;
 
   public ruleset?: Ruleset;
 
@@ -25,6 +26,25 @@ export class Spectral {
     } else {
       this._resolver = createHttpAndFileResolver();
     }
+
+    this._parsers = new Parsers.ParserRegistry(opts?.parsers);
+  }
+
+  // Parsers from the ruleset, then from the constructor options, which win when both match.
+  protected getParsers(): Parsers.ParserRegistry {
+    if (this.ruleset === void 0 || this.ruleset.parsers.size === 0) {
+      return this._parsers;
+    }
+
+    return new Parsers.ParserRegistry([...this.ruleset.parsers, ...this._parsers]);
+  }
+
+  /**
+   * Creates a document using the first registered parser that matches the source or content.
+   * Falls back to YAML, which also parses JSON.
+   */
+  public createDocument(input: string, source?: string): IDocument {
+    return new Document(input, this.getParsers().find(source ?? null, input) ?? Parsers.Yaml, source);
   }
 
   protected parseDocument(target: IParsedResult | IDocument | Record<string, unknown> | string): IDocument {
@@ -32,10 +52,9 @@ export class Spectral {
       ? target
       : isParsedResult(target)
         ? new ParsedDocument(target)
-        : new Document<unknown, Parsers.YamlParserResult<unknown>>(
-            typeof target === 'string' ? target : stringify(target, void 0, 2),
-            Parsers.Yaml,
-          );
+        : typeof target === 'string'
+          ? this.createDocument(target)
+          : new Document<unknown, Parsers.YamlParserResult<unknown>>(stringify(target, void 0, 2), Parsers.Yaml);
   }
 
   public async runWithResolved(
@@ -49,7 +68,7 @@ export class Spectral {
     const document = this.parseDocument(target);
     const ruleset = this.ruleset.fromSource(document.source);
 
-    const inventory = new DocumentInventory(document, this._resolver);
+    const inventory = new DocumentInventory(document, this._resolver, this.getParsers());
     await inventory.resolve();
 
     const runner = new Runner(inventory);

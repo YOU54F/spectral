@@ -98,6 +98,32 @@ export default {
 
 If you use custom functions, the keywords `functions` and `functionOptions` have been removed, as they were designed to help Spectral find your functions. Now functions are passed as a variable, instead of using a string that contains the name like the JSON/YAML formats.
 
+### Custom Parsers
+
+Out of the box, Spectral parses documents as JSON or YAML. A JavaScript ruleset can register parsers for other formats with `parsers`. Each entry takes a `parser` (an object with `parse`, `getLocationForJsonPath` and `trapAccess`, like the ones in `@stoplight/spectral-parsers`) and at least one of:
+
+- `extensions`: the file extensions it handles, such as `[".graphql", ".gql"]`. Compound extensions such as `.schema.json` work too.
+- `test`: a function that gets the document's content and source and returns `true` if the parser should handle it. It is used when no extension matches, for example for stdin.
+
+```js
+import { truthy } from "@stoplight/spectral-functions";
+import { graphql } from "./graphql-parser.js";
+
+export default {
+  parsers: [{ parser: graphql, extensions: [".graphql", ".gql"] }],
+  rules: {
+    "type-description": {
+      given: "$.definitions[?(@.kind == 'ObjectTypeDefinition')]",
+      then: { field: "description", function: truthy },
+    },
+  },
+};
+```
+
+The parser is used both for the documents you lint and for the files they `$ref`. Results point at the ranges that `getLocationForJsonPath` returns. Extension matches win over `test` matches, and the parsers of a ruleset win over the parsers of the rulesets it extends. Documents that no parser matches are still parsed as JSON or YAML.
+
+`parsers` is not available in JSON/YAML rulesets.
+
 Next, publish the ruleset as an npm package, and then install that package as part of your API project and reference it in your Spectral ruleset as:
 
 ```

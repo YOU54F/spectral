@@ -39,6 +39,11 @@
       "type": "string",
       "errorMessage": "must be a valid format"
     },
+    "Parsers": {
+      "$anchor": "parsers",
+      "not": {},
+      "errorMessage": "parsers can only be defined in JS rulesets"
+    },
     "Functions": {
       "$anchor": "functions",
       "type": "array",

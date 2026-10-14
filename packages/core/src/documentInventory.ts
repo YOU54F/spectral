@@ -1,6 +1,6 @@
 import { decodePointerFragment, encodePointerUriFragment, extractSourceFromRef, isLocalRef } from '@stoplight/json';
 import { extname, resolve } from '@stoplight/path';
-import { Dictionary, IParserResult, JsonPath } from '@stoplight/types';
+import { Dictionary, JsonPath } from '@stoplight/types';
 import { isObjectLike } from 'lodash';
 import { Document, IDocument } from './document';
 import { Resolver, ResolveResult } from '@stoplight/spectral-ref-resolver';
@@ -48,6 +48,7 @@ export class DocumentInventory implements IDocumentInventory {
   constructor(
     public readonly document: IDocument,
     protected resolver: Resolver,
+    protected parsers: Parsers.ParserRegistry = new Parsers.ParserRegistry(),
   ) {
     this.graph = null;
     this.errors = null;
@@ -197,9 +198,8 @@ export class DocumentInventory implements IDocumentInventory {
     const ext = extname(source);
 
     const content = String(resolveOpts.result);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const parser: Parsers.IParser<IParserResult<unknown, any, any, any>> =
-      ext === '.json' ? Parsers.Json : Parsers.Yaml;
+    const parser: Parsers.AnyParser =
+      this.parsers.find(source, content) ?? (ext === '.json' ? Parsers.Json : Parsers.Yaml);
     const document = new Document(content, parser, source);
 
     resolveOpts.result = document.data;

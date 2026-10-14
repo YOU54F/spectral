@@ -6,6 +6,7 @@ export type RulesetValidationErrorCode =
   | 'generic-validation-error'
   | 'invalid-ruleset-definition'
   | 'invalid-parser-options-definition'
+  | 'invalid-parser-definition'
   | 'invalid-alias-definition'
   | 'invalid-extend-definition'
   | 'invalid-rule-definition'
@@ -158,6 +159,8 @@ function inferErrorCode(path: string[], keyword: string): RulesetValidationError
       return inferErrorCodeFromRulesError(path);
     case 'parserOptions':
       return 'invalid-parser-options-definition';
+    case 'parsers':
+      return 'invalid-parser-definition';
     case 'aliases':
       return inferErrorCodeFromAliasesError(path);
     case 'extends':
