@@ -346,7 +346,7 @@ testRule('oas3-operation-security-defined', [
         },
       }),
       Parsers.Json,
-      sharedSchemesDocument.source,
+      sharedSchemesDocument.source ?? void 0,
     ),
     errors: [],
     mocks: {
