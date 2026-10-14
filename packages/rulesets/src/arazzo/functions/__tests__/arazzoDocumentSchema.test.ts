@@ -348,36 +348,32 @@ describe('arazzoDocumentSchema', () => {
   });
 
   test.each([
-    [{ condition: '$statusCode == 200' }],
-    [{ condition: '$statusCode == 200', type: 'simple', context: '$response.body' }],
-    [{ condition: '^ok$', type: 'regex', context: '$response.body' }],
-    [{ condition: '$.pets[0]', type: 'jsonpath', context: '$response.body' }],
-    [
-      {
-        condition: '$.pets[0]',
-        context: '$response.body',
-        type: { type: 'jsonpath', version: 'draft-goessner-dispatch-jsonpath-00' },
-      },
-    ],
-    [{ condition: '/pets', context: '$response.body', type: { type: 'xpath', version: 'xpath-30' } }],
+    { condition: '$statusCode == 200' },
+    { condition: '$statusCode == 200', type: 'simple', context: '$response.body' },
+    { condition: '^ok$', type: 'regex', context: '$response.body' },
+    { condition: '$.pets[0]', type: 'jsonpath', context: '$response.body' },
+    {
+      condition: '$.pets[0]',
+      context: '$response.body',
+      type: { type: 'jsonpath', version: 'draft-goessner-dispatch-jsonpath-00' },
+    },
+    { condition: '/pets', context: '$response.body', type: { type: 'xpath', version: 'xpath-30' } },
   ])('should pass for a valid Criterion Object %j', criterion => {
     expect(runSchema(docWithCriterion(criterion))).toHaveLength(0);
   });
 
   test.each([
     // version must be nested in a Criterion Expression Type Object
-    [
-      {
-        condition: '$.pets',
-        context: '$response.body',
-        type: 'jsonpath',
-        version: 'draft-goessner-dispatch-jsonpath-00',
-      },
-    ],
-    [{ condition: '$.pets', context: '$response.body', type: 'unknown' }],
-    [{ condition: '$.pets', context: '$response.body', type: { type: 'jsonpath', version: 'xpath-30' } }],
-    [{ condition: '$.pets', context: '$response.body', type: { type: 'regex', version: '1' } }],
-    [{ condition: '$.pets', context: '$response.body', type: { type: 'jsonpath' } }],
+    {
+      condition: '$.pets',
+      context: '$response.body',
+      type: 'jsonpath',
+      version: 'draft-goessner-dispatch-jsonpath-00',
+    },
+    { condition: '$.pets', context: '$response.body', type: 'unknown' },
+    { condition: '$.pets', context: '$response.body', type: { type: 'jsonpath', version: 'xpath-30' } },
+    { condition: '$.pets', context: '$response.body', type: { type: 'regex', version: '1' } },
+    { condition: '$.pets', context: '$response.body', type: { type: 'jsonpath' } },
   ])('should fail for an invalid Criterion Object %j', criterion => {
     expect(runSchema(docWithCriterion(criterion)).length).toBeGreaterThan(0);
   });
@@ -400,21 +396,21 @@ describe('arazzoDocumentSchema', () => {
 
   test.each([
     // without stepId/workflowId the current step is retried
-    [{ name: 'retryCurrent', type: 'retry' }],
-    [{ name: 'retryCurrent', type: 'retry', retryAfter: 1, retryLimit: 3 }],
-    [{ name: 'retryCurrent', type: 'retry', retryLimit: 3 }],
-    [{ name: 'retryAfterStep', type: 'retry', stepId: 'step2', retryAfter: 1 }],
-    [{ name: 'retryAfterWorkflow', type: 'retry', workflowId: 'workflow1' }],
-    [{ name: 'gotoStep', type: 'goto', stepId: 'step2' }],
-    [{ name: 'endAction', type: 'end' }],
+    { name: 'retryCurrent', type: 'retry' },
+    { name: 'retryCurrent', type: 'retry', retryAfter: 1, retryLimit: 3 },
+    { name: 'retryCurrent', type: 'retry', retryLimit: 3 },
+    { name: 'retryAfterStep', type: 'retry', stepId: 'step2', retryAfter: 1 },
+    { name: 'retryAfterWorkflow', type: 'retry', workflowId: 'workflow1' },
+    { name: 'gotoStep', type: 'goto', stepId: 'step2' },
+    { name: 'endAction', type: 'end' },
   ])('should pass for a valid Failure Action Object %j', action => {
     expect(runSchema(docWithFailureAction(action))).toHaveLength(0);
   });
 
   test.each([
-    [{ name: 'gotoNothing', type: 'goto' }],
-    [{ name: 'retryNegative', type: 'retry', retryAfter: -1 }],
-    [{ name: 'endWithStep', type: 'end', stepId: 'step2' }],
+    { name: 'gotoNothing', type: 'goto' },
+    { name: 'retryNegative', type: 'retry', retryAfter: -1 },
+    { name: 'endWithStep', type: 'end', stepId: 'step2' },
   ])('should fail for an invalid Failure Action Object %j', action => {
     expect(runSchema(docWithFailureAction(action)).length).toBeGreaterThan(0);
   });
