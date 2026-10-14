@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="urn:example:petstore" targetNamespace="urn:example:petstore">
+  <wsdl:types>
+    <xsd:schema targetNamespace="urn:example:petstore" elementFormDefault="qualified">
+      <xsd:element name="GetPetRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="id" type="xsd:long"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="GetPetRequest">
+    <wsdl:part name="parameters" element="tns:GetPetRequest"/>
+  </wsdl:message>
+  <wsdl:message name="GetPetResponse">
+    <wsdl:part name="parameters" element="tns:GetPetResponse"/>
+  </wsdl:message>
+  <wsdl:portType name="PetPortType">
+    <wsdl:documentation>Manage the pets of the store.</wsdl:documentation>
+    <wsdl:operation name="GetPet">
+      <wsdl:input message="tns:GetPetRequest"/>
+      <wsdl:output message="tns:GetPetResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="PetSoapBinding" type="tns:PetPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="GetPet">
+      <soap:operation soapAction="urn:example:petstore:GetPet"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="PetService">
+    <wsdl:documentation>The Petstore SOAP service.</wsdl:documentation>
+    <wsdl:port name="PetSoapPort" binding="tns:PetSoapBinding">
+      <soap:address location="https://petstore.example.com/soap"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

@@ -8,5 +8,6 @@ import { default as openrpc } from './openrpc';
 import { default as avro } from './avro';
 import { default as graphql } from './graphql';
 import { default as protobuf } from './protobuf';
+import { default as wsdl } from './wsdl';
 
-export { oas, asyncapi, arazzo, mcp, a2a, overlay, openrpc, avro, graphql, protobuf };
+export { oas, asyncapi, arazzo, mcp, a2a, overlay, openrpc, avro, graphql, protobuf, wsdl };

@@ -98,6 +98,7 @@ export default {
           "const truthy = globalThis[Symbol.for('@stoplight-spectral/builtins')]['822928']['@stoplight/spectral-functions']['truthy'];",
           "const undefined$1 = globalThis[Symbol.for('@stoplight-spectral/builtins')]['822928']['@stoplight/spectral-functions']['undefined'];",
           "const unreferencedReusableObject = globalThis[Symbol.for('@stoplight-spectral/builtins')]['822928']['@stoplight/spectral-functions']['unreferencedReusableObject'];",
+          "const wsdl = globalThis[Symbol.for('@stoplight-spectral/builtins')]['822928']['@stoplight/spectral-rulesets']['wsdl'];",
           "const xor = globalThis[Symbol.for('@stoplight-spectral/builtins')]['822928']['@stoplight/spectral-functions']['xor'];",
         ].sort(),
       );

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="urn:example:b" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <wsdl:import namespace="urn:example:a" location="cycle-a.wsdl"/>
+  <wsdl:message name="In">
+    <wsdl:part name="a" type="xsd:string"/>
+  </wsdl:message>
+</wsdl:definitions>

@@ -8,13 +8,15 @@ import a2aRuleset from '../../a2a/index';
 import openrpcRuleset from '../../openrpc/index';
 import avroRuleset from '../../avro/index';
 import protobufRuleset from '../../protobuf/index';
+import wsdlRuleset from '../../wsdl/index';
 
 type Ruleset = typeof oasRuleset &
   typeof aasRuleset &
   typeof a2aRuleset &
   typeof openrpcRuleset &
   typeof avroRuleset &
-  typeof protobufRuleset;
+  typeof protobufRuleset &
+  typeof wsdlRuleset;
 export type RuleName = keyof Ruleset['rules'];
 
 type Scenario = ReadonlyArray<
@@ -58,6 +60,7 @@ export function createWithRules(rules: (keyof Ruleset['rules'])[]): Spectral {
       [openrpcRuleset as RulesetDefinition, 'off'],
       [avroRuleset, 'off'],
       [protobufRuleset as RulesetDefinition, 'off'],
+      [wsdlRuleset as RulesetDefinition, 'off'],
     ],
     rules: rules.reduce((obj, name) => {
       obj[name] = true;

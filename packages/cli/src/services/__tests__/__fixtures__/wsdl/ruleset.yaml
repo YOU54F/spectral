@@ -1,0 +1,3 @@
+extends: spectral:wsdl
+rules:
+  wsdl-operation-documentation: off

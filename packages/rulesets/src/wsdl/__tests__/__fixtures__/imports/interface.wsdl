@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="urn:example:petstore"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:pets="urn:example:pets"
+    xmlns:tns="urn:example:petstore">
+  <wsdl:types>
+    <xsd:schema targetNamespace="urn:example:petstore">
+      <xsd:import namespace="urn:example:pets" schemaLocation="pets.xsd"/>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="GetPetRequest">
+    <wsdl:part name="parameters" element="pets:GetPetRequest"/>
+  </wsdl:message>
+  <wsdl:message name="GetPetResponse">
+    <wsdl:part name="parameters" element="pets:Pet"/>
+  </wsdl:message>
+  <wsdl:portType name="PetPortType">
+    <wsdl:documentation>Manage the pets of the store.</wsdl:documentation>
+    <wsdl:operation name="GetPet">
+      <wsdl:input message="tns:GetPetRequest"/>
+      <wsdl:output message="tns:GetPetResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+</wsdl:definitions>

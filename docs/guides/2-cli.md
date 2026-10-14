@@ -70,6 +70,7 @@ Here you can build a [custom ruleset](../getting-started/3-rulesets.md), or exte
 - [Avro ruleset](../reference/avro-rules.md)
 - [GraphQL ruleset](../reference/graphql-rules.md)
 - [Protobuf ruleset](../reference/protobuf-rules.md)
+- [WSDL ruleset](../reference/wsdl-rules.md)
 
 ## Error Results
 

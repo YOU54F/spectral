@@ -3,3 +3,4 @@ export * from './yaml';
 export * from './types';
 export * from './registry';
 export * from './protobuf';
+export * from './xml';

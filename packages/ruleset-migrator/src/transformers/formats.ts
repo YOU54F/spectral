@@ -25,6 +25,7 @@ const FORMATS = [
   'avro1',
   'graphql',
   'protobuf',
+  'wsdl',
   'json-schema',
   'json-schema-loose',
   'json-schema-draft4',

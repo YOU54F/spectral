@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="urn:example:petstore"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:pets="urn:example:pets"
+    xmlns:tns="urn:example:petstore">
+  <wsdl:import namespace="urn:example:petstore" location="interface.wsdl"/>
+  <wsdl:message name="AuditRequest">
+    <wsdl:part name="pet" element="pets:Pet"/>
+    <wsdl:part name="owner" element="pets:Owner"/>
+  </wsdl:message>
+  <wsdl:binding name="PetBinding" type="tns:PetPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="GetPet">
+      <soap:operation soapAction="urn:example:petstore:GetPet"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DeletePet">
+      <soap:operation soapAction="urn:example:petstore:DeletePet"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="PetService">
+    <wsdl:documentation>Manage the pets of the store.</wsdl:documentation>
+    <wsdl:port name="PetPort" binding="tns:PetBinding">
+      <soap:address location="http://localhost/pets"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

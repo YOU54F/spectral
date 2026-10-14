@@ -171,6 +171,26 @@ describe('Linter service', () => {
     ]);
   });
 
+  it('lints .wsdl files using spectral:wsdl', async () => {
+    const results = await run('lint -r ./wsdl/ruleset.yaml ./wsdl/pets.wsdl');
+
+    expect(results).toEqual([
+      {
+        code: 'wsdl-message-part-reference',
+        documentationUrl:
+          'https://meta.stoplight.io/docs/spectral/docs/reference/wsdl-rules.md#wsdl-message-part-reference',
+        message: 'Element "tns:GetPetResponse" is not defined in the schema for "urn:example:petstore".',
+        path: ['root', 'children', '2', 'children', '0', 'attributes', 'element', 'value'],
+        range: {
+          start: { line: 17, character: 42 },
+          end: { line: 17, character: 60 },
+        },
+        severity: DiagnosticSeverity.Error,
+        source: join(__dirname, './__fixtures__/wsdl/pets.wsdl'),
+      },
+    ]);
+  });
+
   it('demands some ruleset to be present', () => {
     (process.cwd as jest.Mock).mockReturnValue(join(__dirname, '__fixtures__/resolver'));
     return expect(run(`lint stoplight-info-document.json`)).rejects.toThrow(

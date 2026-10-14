@@ -17,6 +17,7 @@ const REPLACEMENTS = {
   'spectral:avro': 'avro',
   'spectral:graphql': 'graphql',
   'spectral:protobuf': 'protobuf',
+  'spectral:wsdl': 'wsdl',
 };
 
 export { transformer as default };

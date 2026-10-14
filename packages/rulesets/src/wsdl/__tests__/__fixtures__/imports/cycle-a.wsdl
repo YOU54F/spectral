@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="urn:example:a" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:b="urn:example:b">
+  <wsdl:import namespace="urn:example:b" location="cycle-b.wsdl"/>
+  <wsdl:portType name="A">
+    <wsdl:operation name="Op">
+      <wsdl:input message="b:In"/>
+      <wsdl:output message="b:Out"/>
+    </wsdl:operation>
+  </wsdl:portType>
+</wsdl:definitions>

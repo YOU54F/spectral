@@ -9,3 +9,4 @@ export * from './openrpc';
 export * from './avro';
 export * from './graphql';
 export * from './protobuf';
+export * from './wsdl';

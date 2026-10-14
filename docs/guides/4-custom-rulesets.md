@@ -1,6 +1,6 @@
 # Rulesets
 
-Spectral comes with ten rulesets built-in: [OpenAPI](../reference/openapi-rules.md), [AsyncAPI](../reference/asyncapi-rules.md), [Arazzo](../reference/arazzo-rules.md), [MCP](../reference/mcp-rules.md), [A2A Agent Card](../reference/a2a-rules.md), [OpenAPI Overlay](../reference/overlay-rules.md), [OpenRPC](../reference/openrpc-rules.md), [Apache Avro](../reference/avro-rules.md), [GraphQL](../reference/graphql-rules.md), and [Protobuf](../reference/protobuf-rules.md). They're good starting points, but the true power of Spectral comes with customizing and creating a ruleset that fits your project or organization. Creating a ruleset can help you and your team improve your API design and API development process, and help you create better APIs.
+Spectral comes with eleven rulesets built-in: [OpenAPI](../reference/openapi-rules.md), [AsyncAPI](../reference/asyncapi-rules.md), [Arazzo](../reference/arazzo-rules.md), [MCP](../reference/mcp-rules.md), [A2A Agent Card](../reference/a2a-rules.md), [OpenAPI Overlay](../reference/overlay-rules.md), [OpenRPC](../reference/openrpc-rules.md), [Apache Avro](../reference/avro-rules.md), [GraphQL](../reference/graphql-rules.md), [Protobuf](../reference/protobuf-rules.md), and [WSDL](../reference/wsdl-rules.md). They're good starting points, but the true power of Spectral comes with customizing and creating a ruleset that fits your project or organization. Creating a ruleset can help you and your team improve your API design and API development process, and help you create better APIs.
 
 Let's look through the keywords that make up a ruleset, so you can learn how to tweak a distributed ruleset to work for you, or make your own ruleset from scratch to power your organizations [API Style Guide](https://stoplight.io/api-style-guides-guidelines-and-best-practices/?utm_source=github&utm_medium=spectral&utm_campaign=docs).
 
@@ -52,6 +52,7 @@ Formats are an optional way to specify which API description formats a rule, or 
 - `overlay1_2` (OpenAPI Overlay v1.2.x)
 - `openrpc1` (OpenRPC v1.x, including 1.0.0 release candidates)
 - `protobuf` (Protocol Buffers, parsed from `.proto` files)
+- `wsdl` (WSDL 1.1, parsed from `.wsdl` files)
 - `json-schema` (`$schema` says this is some JSON Schema draft)
 - `json-schema-loose` (looks like JSON Schema, but no `$schema` found)
 - `json-schema-draft4` (`$schema` says this is JSON Schema Draft 04)
