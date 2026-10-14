@@ -8,7 +8,7 @@ In your ruleset file you can add `extends: "spectral:avro"` and you'll get all o
 
 ### AsyncAPI and `schemaFormat`
 
-AsyncAPI messages can declare Avro payloads with `schemaFormat`, for example `application/vnd.apache.avro;version=1.9.0`. The `spectral:asyncapi` ruleset checks these payloads with the structural schema and the semantic checks for names, references, defaults, enum symbols, unions and logical types, through [asyncapi-payload-avro](asyncapi-rules.md#asyncapi-payload-avro) for AsyncAPI 2.x and [asyncapi-3-payload-avro](asyncapi-rules.md#asyncapi-3-payload-avro) for AsyncAPI 3.x. The style checks (`avro-union-default-first-member`, `avro-optional-field-null-default` and the doc rules) only run with `spectral:avro`, for example on `.avsc` files.
+AsyncAPI messages can declare Avro payloads with `schemaFormat`, for example `application/vnd.apache.avro;version=1.9.0`. The `spectral:asyncapi` ruleset checks these payloads with the structural schema and the semantic checks for names, references, defaults, enum symbols and unions, through [asyncapi-payload-avro](asyncapi-rules.md#asyncapi-payload-avro) for AsyncAPI 2.x and [asyncapi-3-payload-avro](asyncapi-rules.md#asyncapi-3-payload-avro) for AsyncAPI 3.x. Logical types are checked as warnings by [asyncapi-payload-avro-logical-type](asyncapi-rules.md#asyncapi-payload-avro-logical-type) and [asyncapi-3-payload-avro-logical-type](asyncapi-rules.md#asyncapi-3-payload-avro-logical-type). The style checks (`avro-union-default-first-member`, `avro-optional-field-null-default` and the doc rules) only run with `spectral:avro`, for example on `.avsc` files.
 
 ### avro-schema
 
