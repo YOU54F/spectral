@@ -40,6 +40,11 @@
       "uri": "/docs/getting-started/5-asyncapi.md"
     },
     {
+      "type": "item",
+      "title": "Protobuf Support",
+      "uri": "/docs/getting-started/13-protobuf.md"
+    },
+    {
       "type": "divider",
       "title": "guides"
     },
@@ -97,7 +102,7 @@
           "title": "JavaScript Ruleset Format",
           "uri": "/docs/guides/4f-js-rulesets.md"
         }
-       ]    
+      ]
     },
     {
       "type": "item",
@@ -151,6 +156,11 @@
       "type": "item",
       "title": "AsyncAPI Rules",
       "uri": "/docs/reference/asyncapi-rules.md"
+    },
+    {
+      "type": "item",
+      "title": "Protobuf Rules",
+      "uri": "/docs/reference/protobuf-rules.md"
     },
     {
       "type": "item",

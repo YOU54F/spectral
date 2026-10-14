@@ -10,6 +10,7 @@ const REPLACEMENTS = {
   'spectral:oas': 'oas',
   'spectral:asyncapi': 'asyncapi',
   'spectral:arazzo': 'arazzo',
+  'spectral:protobuf': 'protobuf',
 };
 
 export { transformer as default };

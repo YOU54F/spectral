@@ -10,11 +10,12 @@ Rules take certain parameters and then call functions on parts of another YAML o
 
 The fastest way to create a ruleset is to use the `extends` property to leverage an existing ruleset.
 
-Spectral comes with three built-in rulesets:
+Spectral comes with four built-in rulesets:
 
 - `spectral:oas` - [OpenAPI v2/v3 rules](./4-openapi.md)
 - `spectral:asyncapi` - [AsyncAPI v2/v3 rules](./5-asyncapi.md)
 - `spectral:arazzo` - [Arazzo v1 rules](./6-arazzo.md)
+- `spectral:protobuf` - [Protobuf rules](./13-protobuf.md)
 
 To create a ruleset that extends both rulesets, open your terminal and run:
 
