@@ -249,6 +249,11 @@ export function definitions(doc: WsdlDocument, path: JsonPath): Definitions {
   const root: Located = { element, path: [...path, 'root'] };
   const collector = new Collector();
   collector.document(doc, root);
+  // The resolver may hand back a copy of a document that is already being collected (an import cycle back to the
+  // root), whose own imports are left unloaded. A namespace whose WSDL definitions were collected is not unchecked.
+  for (const ns of collector.wsdlNamespaces) {
+    if (ns !== null) collector.unchecked.delete(ns);
+  }
 
   const result: Definitions = {
     root,
