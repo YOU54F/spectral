@@ -27,6 +27,27 @@ describe('validateGraphqlSchema', () => {
     ]);
   });
 
+  it('treats built-in scalars as known in operations', () => {
+    const { data } = Graphql.parse(
+      'query Q($a: String!, $b: Int, $c: Float, $d: Boolean, $e: [ID!]) { pet(id: $e) @include(if: $d) { id } }',
+    );
+    expect(validateGraphqlSchema(data)).toEqual([]);
+  });
+
+  it('does not report unknown types in operations-only documents', () => {
+    const { data } = Graphql.parse(
+      'query Q($filter: PetFilter) { pets(filter: $filter) { ...F } }\nfragment F on Pet { id }',
+    );
+    expect(validateGraphqlSchema(data)).toEqual([]);
+  });
+
+  it('reports unknown types in operations of documents with type definitions', () => {
+    const { data } = Graphql.parse('type Pet { id: ID! }\nquery Q($id: ID!, $filter: PetFilter) { pet { id } }');
+    expect(validateGraphqlSchema(data)).toEqual([
+      { message: 'Unknown type "PetFilter".', path: ['definitions', 1, 'variableDefinitions', 1, 'type'] },
+    ]);
+  });
+
   it('returns undefined for data the parser did not produce', () => {
     expect(validateGraphqlSchema({ kind: 'Document', definitions: [] })).toBeUndefined();
     expect(validateGraphqlSchema(void 0)).toBeUndefined();

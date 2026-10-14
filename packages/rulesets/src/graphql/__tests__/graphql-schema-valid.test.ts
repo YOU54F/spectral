@@ -68,6 +68,33 @@ testRule('graphql-schema-valid', [
     ],
   },
   {
+    name: 'an operations-only document using built-in scalars and directives',
+    document: [
+      'query FindPets($species: String!, $first: Int, $min: Float, $all: Boolean = false, $id: ID) {',
+      '  pets(species: $species, first: $first) @include(if: $all) { ...PetFields }',
+      '}',
+      'mutation AdoptPet($input: AdoptPetInput!) { adoptPet(input: $input) { id @skip(if: true) } }',
+      'fragment PetFields on Pet { id name }',
+    ].join('\n'),
+    errors: [],
+  },
+  {
+    name: 'operations in a document with type definitions',
+    document:
+      'type Pet { id: ID! }\nquery Q($id: ID!, $filter: PetFilter) { pet(id: $id) { ...F } }\nfragment F on Pet { id }',
+    errors: [{ message: 'Unknown type "PetFilter".', path: ['definitions', '1', 'variableDefinitions', '1', 'type'] }],
+  },
+  {
+    name: 'unknown directives in operations',
+    document: 'query Q($id: ID!) { pet(id: $id) @cached { id } }',
+    errors: [
+      {
+        message: 'Unknown directive "@cached".',
+        path: ['definitions', '0', 'selectionSet', 'selections', '0', 'directives', '0'],
+      },
+    ],
+  },
+  {
     name: 'duplicate names are left to the uniqueness rules',
     document: 'type Pet { id: ID id: ID }\ntype Pet { id: ID }\nenum Kind { DOG DOG }',
     errors: [],

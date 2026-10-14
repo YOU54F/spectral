@@ -156,7 +156,7 @@ directive @auth on OBJECT
 
 The document must be a valid, standalone GraphQL schema, as checked by [graphql-js](https://github.com/graphql/graphql-js). This reports, for example, unknown types and directives, extensions of undefined types, misplaced directives, output types used as input types, and objects that do not implement their interfaces correctly.
 
-A missing `Query` type is not reported, so partial schemas are fine. Duplicate names are left to the uniqueness rules above. Other directives that are defined elsewhere are reported as unknown. Turn this rule off for schemas that rely on them.
+A missing `Query` type is not reported, so partial schemas are fine. The built-in scalars (`String`, `Int`, `Float`, `Boolean` and `ID`) and directives (`@include`, `@skip`, `@deprecated` and `@specifiedBy`) are always known. Documents with operations and fragments but no type definitions or extensions are not checked against a schema, so the types they reference are not reported as unknown; in documents that also define types, operations and fragments may only use the types defined there. Duplicate names are left to the uniqueness rules above. Other directives that are defined elsewhere are reported as unknown. Turn this rule off for schemas that rely on them.
 
 [Apollo Federation](https://www.apollographql.com/docs/graphos/schema-design/federated-schemas/reference/directives) subgraphs don't need to define the federation directives and types they use:
 
