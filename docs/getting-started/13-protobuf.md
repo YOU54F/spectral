@@ -30,6 +30,7 @@ messages:
     fields:
       - { name: pet_id, type: string, number: 1, label: optional, options: {} }
       - { name: tags, type: "map<string, string>", keyType: string, valueType: string, number: 2, options: {} }
+      - { name: result, type: Result, number: 3, group: true, options: {} } # proto2 group; its body is the nested message Result
     oneofs: [{ name: owner, fields: [], options: {} }]
     messages: [] # nested messages
     enums: [] # nested enums
@@ -73,4 +74,4 @@ Aggregate option values (`option (foo) = { a: 1, b { c: "x" }, d: [1, 2] }`) are
 
 ## Limitations
 
-The parser is syntactic only: it does not resolve imports or type references, and editions features are not validated. Imports are not followed because Spectral's resolver works on JSON `$ref`s, which Protobuf files do not have, so rules only ever see one `.proto` file at a time. As a consequence, duplicate checks only cover what is declared in a single file.
+The parser is syntactic only: it does not resolve imports or type references, and editions features are kept as plain options (e.g. `features.field_presence`). The ruleset checks a few editions rules (`protobuf-editions-legacy-syntax`, `protobuf-field-default-allowed`), but does not validate features in general. Imports are not followed because Spectral's resolver works on JSON `$ref`s, which Protobuf files do not have, so rules only ever see one `.proto` file at a time. As a consequence, duplicate checks only cover what is declared in a single file.

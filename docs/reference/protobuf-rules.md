@@ -243,9 +243,13 @@ enum PetKind {
 }
 ```
 
-### protobuf-type-names-unique
+### protobuf-symbol-names-unique
 
-Messages, enums and services declared in the same scope (directly in the file, or directly in a message) must have unique names. The same name in different scopes, such as `Pet.Kind` and `Owner.Kind`, is fine.
+Names declared in the same scope must not clash, as protoc puts them all in one symbol table. A scope is the file (messages, enums, services and extensions declared at the top level), a message (its fields, oneofs, nested messages and enums, and extensions declared in it) or a service (its RPCs). The same name in different scopes, such as `Pet.Kind` and `Owner.Kind`, is fine, and names are case-sensitive, so a field `pet` next to a message `Pet` is fine too.
+
+Enum values follow C++ scoping rules: they are siblings of their enum, not children of it. Two enums in the same scope can therefore not share a value name, and an enum value can not have the name of a message, field or the enum itself in that scope. This is why enum values are usually prefixed with the enum name.
+
+The declaration that comes second in the file is reported. Duplicate field names and duplicate value names within one enum are reported by `protobuf-field-names-unique` and `protobuf-enum-value-names-unique` instead.
 
 **Recommended:** Yes
 
@@ -255,5 +259,84 @@ Messages, enums and services declared in the same scope (directly in the file, o
 message Pet {}
 enum Pet {
   PET_UNSPECIFIED = 0;
+}
+
+enum Color {
+  UNKNOWN = 0;
+}
+enum Size {
+  UNKNOWN = 0;
+}
+```
+
+**Good Example**
+
+```protobuf
+enum Color {
+  COLOR_UNSPECIFIED = 0;
+}
+enum Size {
+  SIZE_UNSPECIFIED = 0;
+}
+```
+
+### protobuf-editions-legacy-syntax
+
+Editions files (`edition = "2023";` or later) must not use syntax that editions replaced with features, which protoc rejects:
+
+- the `required` label: use `[features.field_presence = LEGACY_REQUIRED]`;
+- the `optional` label: fields have explicit presence by default (see `features.field_presence`);
+- `group` fields: use a message field with `[features.message_encoding = DELIMITED]`;
+- the `packed` field option: use `features.repeated_field_encoding`.
+
+**Recommended:** Yes
+
+**Bad Example**
+
+```protobuf
+edition = "2023";
+
+message Pet {
+  required string name = 1;
+  repeated int32 scores = 2 [packed = false];
+}
+```
+
+**Good Example**
+
+```protobuf
+edition = "2023";
+
+message Pet {
+  string name = 1 [features.field_presence = LEGACY_REQUIRED];
+  repeated int32 scores = 2 [features.repeated_field_encoding = EXPANDED];
+}
+```
+
+### protobuf-field-default-allowed
+
+The `default` field option is only allowed where protoc accepts it: not in proto3 files, not on repeated (or map) fields, and in editions files not on fields with implicit presence. Implicit presence is resolved from the `features.field_presence` feature of the field, its enclosing messages and the file; oneof fields and extensions are not checked, as they always have explicit presence.
+
+**Recommended:** Yes
+
+**Bad Example**
+
+```protobuf
+edition = "2023";
+
+option features.field_presence = IMPLICIT;
+
+message Pet {
+  int32 age = 1 [default = 1];
+}
+```
+
+**Good Example**
+
+```protobuf
+edition = "2023";
+
+message Pet {
+  int32 age = 1 [default = 1];
 }
 ```

@@ -136,18 +136,23 @@ describe('Protobuf parser', () => {
   });
 
   it('defaults to proto2 and supports proto2 constructs', () => {
-    const { data, diagnostics } = parseProtobuf(`message A {
+    const result = parseProtobuf(`message A {
   required int32 a = 1 [default = -5];
   optional group Result = 2 { optional string url = 3; }
   extensions 100 to 199;
 }
 extend A { optional int32 b = 100; }
 `);
+    const { data, diagnostics } = result;
     expect(diagnostics).toEqual([]);
     expect(data.syntax).toBe('proto2');
+    expect(Protobuf.getLocationForJsonPath(result, ['messages', 0, 'fields', 1, 'group'])?.range).toEqual({
+      start: { line: 2, character: 11 },
+      end: { line: 2, character: 16 },
+    });
     expect(data.messages[0].fields).toEqual([
       { name: 'a', type: 'int32', number: 1, label: 'required', options: { default: -5 } },
-      { name: 'result', type: 'Result', number: 2, label: 'optional', options: {} },
+      { name: 'result', type: 'Result', number: 2, label: 'optional', group: true, options: {} },
     ]);
     expect(data.messages[0].messages[0]).toMatchObject({ name: 'Result', fields: [{ name: 'url' }] });
     expect(data.messages[0].extensions).toEqual([{ start: 100, end: 199 }]);

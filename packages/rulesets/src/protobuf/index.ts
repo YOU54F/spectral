@@ -3,13 +3,15 @@ import { casing, truthy } from '@stoplight/spectral-functions';
 import { Protobuf } from '@stoplight/spectral-parsers';
 
 import protobufComment from './functions/protobufComment';
+import protobufEditionsLegacySyntax from './functions/protobufEditionsLegacySyntax';
 import protobufEnumValueNames from './functions/protobufEnumValueNames';
 import protobufEnumValuesUnique from './functions/protobufEnumValuesUnique';
 import protobufEnumZeroValue from './functions/protobufEnumZeroValue';
+import protobufFieldDefault from './functions/protobufFieldDefault';
 import protobufFieldNumber from './functions/protobufFieldNumber';
 import protobufFieldsUnique from './functions/protobufFieldsUnique';
 import protobufRpcTypeNames from './functions/protobufRpcTypeNames';
-import protobufTypeNamesUnique from './functions/protobufTypeNamesUnique';
+import protobufSymbolNamesUnique from './functions/protobufSymbolNamesUnique';
 
 export default {
   documentationUrl: 'https://meta.stoplight.io/docs/spectral/docs/reference/protobuf-rules.md',
@@ -145,14 +147,33 @@ export default {
         },
       },
     },
-    'protobuf-type-names-unique': {
+    'protobuf-symbol-names-unique': {
       description:
-        'Messages, enums and services declared in the same scope (the file or a message) must have unique names.',
+        'Names declared in the same scope (the file, a message or a service) must not clash, across messages, enums, enum values, services, fields, oneofs, extensions and RPCs.',
       message: '{{error}}',
       severity: 'error',
-      given: ['$', '$..messages[*]'],
+      given: ['$', '$..messages[*]', '$.services[*]'],
       then: {
-        function: protobufTypeNamesUnique,
+        function: protobufSymbolNamesUnique,
+      },
+    },
+    'protobuf-editions-legacy-syntax': {
+      description: 'Editions files must not use "required" or "optional" labels, groups or the "packed" field option.',
+      message: '{{error}}',
+      severity: 'error',
+      given: '$',
+      then: {
+        function: protobufEditionsLegacySyntax,
+      },
+    },
+    'protobuf-field-default-allowed': {
+      description:
+        'Field defaults are not allowed in proto3, on repeated fields, or on fields with implicit presence in editions.',
+      message: '{{error}}',
+      severity: 'error',
+      given: '$',
+      then: {
+        function: protobufFieldDefault,
       },
     },
   },

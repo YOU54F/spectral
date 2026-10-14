@@ -28,6 +28,8 @@ export type ProtobufField = {
   type: string;
   number: number;
   label?: 'optional' | 'required' | 'repeated';
+  // proto2 `group` field; its message body is the nested message named `type`
+  group?: true;
   keyType?: string;
   valueType?: string;
   options: ProtobufOptions;
@@ -780,11 +782,13 @@ class Parser {
         type: groupName.value,
         number: number.value,
         ...(label !== void 0 && { label }),
+        group: true,
         options,
         ...(start.comment !== void 0 && { comment: start.comment }),
         ...trailing(open, this.prev()),
       });
       this.set([...path, 'name'], groupName);
+      this.set([...path, 'group'], typeStart);
       this.set([...path, 'type'], groupName);
       this.set([...path, 'number'], number.first, number.last);
       this.set(path, start, this.prev());
