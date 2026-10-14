@@ -15,7 +15,7 @@ Spectral comes with four built-in rulesets:
 - `spectral:oas` - [OpenAPI v2/v3 rules](./4-openapi.md)
 - `spectral:asyncapi` - [AsyncAPI v2/v3 rules](./5-asyncapi.md)
 - `spectral:arazzo` - [Arazzo v1 rules](./6-arazzo.md)
-- `spectral:a2a` - [A2A Agent Card v0.3/v1.0 rules](./7-a2a.md)
+- `spectral:a2a` - [A2A Agent Card v0.3/v1.0 rules](./8-a2a.md)
 
 To create a ruleset that extends both rulesets, open your terminal and run:
 
