@@ -4,7 +4,7 @@
 [![Stoplight Forest](https://img.shields.io/ecologi/trees/stoplightinc)][stoplight_forest]
 
 - **Custom Rulesets**: Create custom rules to lint JSON or YAML objects
-- **Ready-to-use Rulesets**: Validate and lint **OpenAPI v2, v3.0, v3.1 & v3.2**, **AsyncAPI**, **Arazzo v1**, **MCP registry server.json**, **A2A Agent Card** (v0.3 & v1.0), **OpenAPI Overlay v1**, and **OpenRPC v1** Documents
+- **Ready-to-use Rulesets**: Validate and lint **OpenAPI v2, v3.0, v3.1 & v3.2**, **AsyncAPI**, **Arazzo v1**, **MCP registry server.json**, **A2A Agent Card** (v0.3 & v1.0), **OpenAPI Overlay v1**, **OpenRPC v1** Documents, and **Apache Avro** schemas
 - **API Style Guides**: Automated [API Style Guides](https://stoplight.io/api-style-guides-guidelines-and-best-practices?utm_source=github.com&utm_medium=referral&utm_campaign=github_repo_spectral) using rulesets improve consistency across all your APIs
 - **Ready-to-use Functions**: Built-in set of functions to help [create custom rules](https://meta.stoplight.io/docs/spectral/e5b9616d6d50c-custom-rulesets#adding-rules). Functions include pattern checks, parameter checks, alphabetical ordering, a specified number of characters, provided keys are present in an object, etc.
 - **Custom Functions**: Create custom functions for advanced use cases

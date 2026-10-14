@@ -51,6 +51,11 @@
     },
     {
       "type": "item",
+      "title": "OpenAPI Overlay Support",
+      "uri": "/docs/getting-started/9-overlay.md"
+    },
+    {
+      "type": "item",
       "title": "OpenRPC Support",
       "uri": "/docs/getting-started/10-openrpc.md"
     },
@@ -186,6 +191,11 @@
       "type": "item",
       "title": "OpenRPC Rules",
       "uri": "/docs/reference/openrpc-rules.md"
+    },
+    {
+      "type": "item",
+      "title": "OpenAPI Overlay Rules",
+      "uri": "/docs/reference/overlay-rules.md"
     },
     {
       "type": "item",
