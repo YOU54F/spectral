@@ -17,11 +17,11 @@ describe('ParserRegistry', () => {
   });
 
   it.each([
-    ['/api/schema.graphql'],
-    ['/api/SCHEMA.GRAPHQL'],
-    ['https://example.com/schema.graphql?ref=main'],
-    ['https://example.com/schema.graphql#/definitions'],
-    ['C:\\api\\schema.gql'],
+    '/api/schema.graphql',
+    '/api/SCHEMA.GRAPHQL',
+    'https://example.com/schema.graphql?ref=main',
+    'https://example.com/schema.graphql#/definitions',
+    'C:\\api\\schema.gql',
   ])('matches %s by extension', source => {
     const registry = new ParserRegistry([{ parser: Custom, extensions: ['.graphql', 'gql'] }]);
 
