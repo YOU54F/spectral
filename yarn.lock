@@ -3720,6 +3720,7 @@ __metadata:
     "@types/json-schema": ^7.0.7
     ajv: ^8.18.0
     ajv-formats: ~2.1.1
+    graphql: ^16.14.2
     gzip-size: ^6.0.0
     immer: ^9.0.6
     json-schema-traverse: ^1.0.0

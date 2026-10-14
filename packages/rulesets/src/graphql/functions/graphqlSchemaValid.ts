@@ -1,5 +1,5 @@
 import { createRulesetFunction } from '@stoplight/spectral-core';
-import { validateGraphqlSchema } from '@stoplight/spectral-parsers/graphql';
+import { validateGraphqlSchema } from './utils/validateGraphqlSchema';
 
 export default createRulesetFunction<unknown, null>(
   {

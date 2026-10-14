@@ -1,5 +1,5 @@
 import { DiagnosticSeverity } from '@stoplight/types';
-import { Graphql, validateGraphqlSchema } from '../graphql';
+import { getGraphqlAst, Graphql } from '../graphql';
 
 const sdl = `"""
 The query root
@@ -119,41 +119,11 @@ describe('GraphQL Parser', () => {
     });
   });
 
-  describe('validateGraphqlSchema', () => {
-    it('keeps the AST out of the plain data', () => {
-      const { data } = Graphql.parse('type Query { id: ID }');
-      expect(Object.keys(data!)).toEqual(['kind', 'definitions']);
-      expect(JSON.parse(JSON.stringify(data))).toEqual(data);
-    });
-
-    it('returns no errors for a valid schema', () => {
-      expect(validateGraphqlSchema(Graphql.parse('type Query { status: Status }\nenum Status { SOLD }').data)).toEqual(
-        [],
-      );
-    });
-
-    it('maps errors to JSON paths', () => {
-      const { data } = Graphql.parse(
-        'type Query { pet: Unicorn }\ninterface Node { id: ID! }\ntype Pet implements Node { a: Int }',
-      );
-      expect(validateGraphqlSchema(data)).toEqual([
-        { message: 'Unknown type "Unicorn".', path: ['definitions', 0, 'fields', 0, 'type'] },
-      ]);
-    });
-
-    it('reports schema errors once the SDL is valid', () => {
-      const { data } = Graphql.parse('interface Node { id: ID! }\ntype Pet implements Node { a: Int }');
-      expect(validateGraphqlSchema(data)).toEqual([
-        {
-          message: 'Interface field Node.id expected but Pet does not provide it.',
-          path: ['definitions', 0, 'fields', 0],
-        },
-      ]);
-    });
-
-    it('returns undefined for data the parser did not produce', () => {
-      expect(validateGraphqlSchema({ kind: 'Document', definitions: [] })).toBeUndefined();
-      expect(validateGraphqlSchema(void 0)).toBeUndefined();
-    });
+  it('keeps the graphql-js AST out of the plain data', () => {
+    const { data } = Graphql.parse('type Query { id: ID }');
+    expect(Object.keys(data!)).toEqual(['kind', 'definitions']);
+    expect(JSON.parse(JSON.stringify(data))).toEqual(data);
+    expect(getGraphqlAst(data)?.document.kind).toBe('Document');
+    expect(getGraphqlAst({ kind: 'Document', definitions: [] })).toBeUndefined();
   });
 });

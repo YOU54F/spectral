@@ -21,13 +21,6 @@
     },
     "./package.json": "./package.json"
   },
-  "typesVersions": {
-    "*": {
-      "graphql": [
-        "dist/graphql.d.ts"
-      ]
-    }
-  },
   "files": [
     "/dist"
   ],
