@@ -1,6 +1,7 @@
 import {
   buildASTSchema,
   GraphQLError,
+  isExecutableDefinitionNode,
   KnownArgumentNamesRule,
   KnownDirectivesRule,
   KnownTypeNamesRule,
@@ -16,11 +17,12 @@ import {
   UniqueInputFieldNamesRule,
   UniqueOperationTypesRule,
   UniqueTypeNamesRule,
+  specifiedScalarTypes,
   validateSchema,
   visit,
   visitInParallel,
 } from 'graphql';
-import type { ASTNode, ASTVisitor, DocumentNode } from 'graphql';
+import type { ASTNode, ASTVisitor, DocumentNode, NamedTypeNode } from 'graphql';
 import type { Segment } from '@stoplight/types';
 import { getGraphqlAst } from '@stoplight/spectral-parsers/graphql';
 import { addFederationDefinitions } from './federation';
@@ -34,13 +36,46 @@ const UNIQUENESS_RULES = [
   UniqueDirectiveNamesRule,
 ];
 
+const SPECIFIED_SCALAR_NAMES = new Set(specifiedScalarTypes.map(({ name }) => name));
+
+// KnownTypeNamesRule, except for type references in operations and fragments. graphql-js only treats the built-in
+// scalars as known in type definitions, and expects a schema for the rest, which a single file may not have.
+// So built-in scalars are always known, and in documents without type definitions or extensions, such as
+// operations-only documents, no type references in operations and fragments are reported.
+function KnownTypeNamesInDocumentRule(context: SDLContext): ASTVisitor {
+  const document = context.getDocument();
+  const hasTypeSystem = document.definitions.some(definition => !isExecutableDefinitionNode(definition));
+  const executableTypeRefs = new Set<ASTNode>();
+  for (const definition of document.definitions) {
+    if (isExecutableDefinitionNode(definition)) {
+      visit(definition, { NamedType: node => void executableTypeRefs.add(node) });
+    }
+  }
+
+  return KnownTypeNamesRule({
+    ...context,
+    reportError(error: GraphQLError) {
+      const node = error.nodes?.[0];
+      if (
+        node !== void 0 &&
+        executableTypeRefs.has(node) &&
+        (!hasTypeSystem || SPECIFIED_SCALAR_NAMES.has((node as NamedTypeNode).name.value))
+      ) {
+        return;
+      }
+
+      context.reportError(error);
+    },
+  } as never);
+}
+
 // KnownArgumentNamesRule and ProvidedRequiredArgumentsRule stand in for their `OnDirectives` SDL variants, which
 // graphql-js does not export. Their extra checks only apply to fields of executable documents.
 const SDL_RULES = [
   LoneSchemaDefinitionRule,
   UniqueOperationTypesRule,
   UniqueArgumentDefinitionNamesRule,
-  KnownTypeNamesRule,
+  KnownTypeNamesInDocumentRule,
   KnownDirectivesRule,
   UniqueDirectivesPerLocationRule,
   PossibleTypeExtensionsRule,
