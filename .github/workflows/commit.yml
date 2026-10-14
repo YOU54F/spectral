@@ -2,7 +2,7 @@ name: Commit
 on:
   workflow_call:
   pull_request:
-    branches: [develop]
+    branches: [develop, 'feat/**']
     paths-ignore:
     - README.md
     - .github/**
