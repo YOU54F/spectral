@@ -1,4 +1,5 @@
 import type { DiagnosticSeverity } from '@stoplight/types';
+import type { ParserEntry } from '@stoplight/spectral-parsers';
 import type { Format } from './format';
 import type { RulesetFunction, RulesetFunctionWithValidator } from '../types';
 import type { Formats } from './formats';
@@ -99,6 +100,8 @@ export type RulesetDefinition = Readonly<
     description?: string;
     formats?: Formats | Format[];
     parserOptions?: Partial<ParserOptions>;
+    // JS rulesets only: parsers for documents that are neither JSON nor YAML, picked by extension or content
+    parsers?: ParserEntry[];
     overrides?: RulesetOverridesDefinition;
     aliases?: RulesetAliasesDefinition;
   } & Readonly<

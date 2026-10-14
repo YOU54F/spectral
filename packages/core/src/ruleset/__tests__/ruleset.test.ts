@@ -404,6 +404,29 @@ describe('Ruleset', () => {
     });
   });
 
+  it('should collect parsers, with extended rulesets first', () => {
+    const parser = {
+      parse: () => ({ data: {}, ast: {}, lineMap: [], diagnostics: [] }),
+      getLocationForJsonPath: () => void 0,
+      trapAccess: <T>(obj: T): T => obj,
+    };
+    const base = { ...parser };
+    const own = { ...parser };
+
+    const ruleset = new Ruleset({
+      extends: [{ parsers: [{ parser: base, extensions: ['.graphql', '.gql'] }], rules: {} }],
+      parsers: [{ parser: own, extensions: ['.graphql'] }],
+      rules: {},
+    });
+
+    const [first, second] = ruleset.parsers;
+    expect(first.parser).toBe(base);
+    expect(second.parser).toBe(own);
+    expect(ruleset.parsers.find('/schema.graphql', '')).toBe(own);
+    expect(ruleset.parsers.find('/schema.gql', '')).toBe(base);
+    expect(new Ruleset({ rules: {} }).parsers.size).toBe(0);
+  });
+
   describe('overrides', () => {
     const cwd = path.join(__dirname, './__fixtures__/overrides/');
 

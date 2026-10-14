@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
-import { Document, IRuleResult, Ruleset, Spectral } from '@stoplight/spectral-core';
+import { IDocument, IRuleResult, Ruleset, Spectral } from '@stoplight/spectral-core';
 import { readParsable, IFileReadOptions } from '@stoplight/spectral-runtime';
-import * as Parsers from '@stoplight/spectral-parsers';
 import { getRuleset, listFiles, segregateEntriesPerKind, readFileDescriptor } from './utils';
 import { getResolver } from './utils/getResolver';
 import { ILintConfig } from '../config';
@@ -49,7 +48,12 @@ export async function lint(documents: Array<number | string>, flags: ILintConfig
       console.info(`Linting ${targetUri}`);
     }
 
-    const document = await createDocument(targetUri, { encoding: flags.encoding }, flags.stdinFilepath ?? '<STDIN>');
+    const document = await createDocument(
+      spectral,
+      targetUri,
+      { encoding: flags.encoding },
+      flags.stdinFilepath ?? '<STDIN>',
+    );
 
     results.push(
       ...(await spectral.run(document, {
@@ -65,13 +69,14 @@ export async function lint(documents: Array<number | string>, flags: ILintConfig
 }
 
 const createDocument = async (
+  spectral: Spectral,
   identifier: string | number,
   opts: IFileReadOptions,
   source: string,
-): Promise<Document<unknown, Parsers.YamlParserResult<unknown>>> => {
+): Promise<IDocument> => {
   if (typeof identifier === 'string') {
-    return new Document(await readParsable(identifier, opts), Parsers.Yaml, identifier);
+    return spectral.createDocument(await readParsable(identifier, opts), identifier);
   }
 
-  return new Document(await readFileDescriptor(identifier, opts), Parsers.Yaml, source);
+  return spectral.createDocument(await readFileDescriptor(identifier, opts), source);
 };

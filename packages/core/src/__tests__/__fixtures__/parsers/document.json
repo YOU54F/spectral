@@ -1,0 +1,5 @@
+{
+  "config": {
+    "$ref": "./config.kv"
+  }
+}

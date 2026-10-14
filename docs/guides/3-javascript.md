@@ -241,3 +241,29 @@ This custom resolver resolves all remote file refs relative to the current worki
 
 You can find more information about how to create custom resolvers in
 the [@stoplight/json-ref-resolver](https://github.com/stoplightio/json-ref-resolver) repository.
+
+### How to Use a Custom Parser
+
+Spectral parses documents as JSON or YAML unless a parser is registered for them. Parsers can be registered in a [JavaScript ruleset](./4f-js-rulesets.md#custom-parsers) or passed to the `Spectral` constructor. Parsers passed to the constructor take precedence over the ruleset ones.
+
+`spectral.createDocument` picks the parser for a document from its source (by extension) or its content (with `test`), and falls back to YAML.
+
+```js title="example-6.mjs" lineNumbers
+import * as fs from "node:fs";
+import spectralCore from "@stoplight/spectral-core";
+import { protobuf } from "./protobuf-parser.js";
+
+const { Spectral } = spectralCore;
+
+const spectral = new Spectral({
+  parsers: [{ parser: protobuf, extensions: [".proto"], test: input => input.startsWith('syntax = "proto3"') }],
+});
+
+// ... set a ruleset
+
+const source = "./service.proto";
+const document = spectral.createDocument(fs.readFileSync(source, "utf8"), source);
+spectral.run(document).then(console.log);
+```
+
+Strings passed to `spectral.run` go through the same lookup, by content only.

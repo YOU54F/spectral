@@ -51,6 +51,44 @@
       },
       "required": ["function"]
     },
+    "Parsers": {
+      "$anchor": "parsers",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "parser": {
+            "x-spectral-runtime": "parser",
+            "errorMessage": "must be a valid parser"
+          },
+          "extensions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "test": {
+            "x-spectral-runtime": "callable",
+            "errorMessage": "must be a function"
+          }
+        },
+        "required": ["parser"],
+        "anyOf": [
+          {
+            "required": ["extensions"]
+          },
+          {
+            "required": ["test"]
+          }
+        ],
+        "additionalProperties": false,
+        "errorMessage": {
+          "anyOf": "must have \"extensions\" or \"test\""
+        }
+      }
+    },
     "Functions": {
       "$anchor": "functions",
       "not": {}

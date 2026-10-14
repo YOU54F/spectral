@@ -928,6 +928,69 @@ describe('JS Ruleset Validation', () => {
     });
   });
 
+  describe('parsers validation', () => {
+    const parser = {
+      parse: () => ({ data: {}, ast: {}, lineMap: [], diagnostics: [] }),
+      getLocationForJsonPath: () => void 0,
+      trapAccess: <T>(obj: T): T => obj,
+    };
+
+    it('recognizes valid parsers', () => {
+      expect(
+        assertValidRuleset.bind(null, {
+          rules: {},
+          parsers: [
+            { parser, extensions: ['.graphql', 'gql'] },
+            { parser, test: (): boolean => true },
+            { parser, extensions: ['.proto'], test: (): boolean => false },
+          ],
+        }),
+      ).not.toThrow();
+    });
+
+    it.each<[unknown, RulesetValidationError[]]>([
+      [{}, [new RulesetValidationError('invalid-ruleset-definition', 'must be array', ['parsers'])]],
+      [
+        [{ parser: {}, extensions: ['.graphql'] }],
+        [new RulesetValidationError('invalid-parser-definition', 'must be a valid parser', ['parsers', '0', 'parser'])],
+      ],
+      [
+        [{ parser, test: 'graphql' }],
+        [new RulesetValidationError('invalid-parser-definition', 'must be a function', ['parsers', '0', 'test'])],
+      ],
+      [
+        [{ parser }],
+        [new RulesetValidationError('invalid-parser-definition', 'must have "extensions" or "test"', ['parsers', '0'])],
+      ],
+      [
+        [{ parser, extensions: [] }],
+        [
+          new RulesetValidationError('invalid-parser-definition', 'must NOT have fewer than 1 items', [
+            'parsers',
+            '0',
+            'extensions',
+          ]),
+        ],
+      ],
+      [
+        [{ parser, extensions: ['.graphql'], formats: [] }],
+        [
+          new RulesetValidationError('invalid-parser-definition', 'must NOT have additional properties', [
+            'parsers',
+            '0',
+          ]),
+        ],
+      ],
+    ])('given invalid parsers %p, throws', (parsers, errors) => {
+      expect(
+        assertValidRuleset.bind(null, {
+          rules: {},
+          parsers,
+        }),
+      ).toThrowAggregateError(new AggregateError(errors));
+    });
+  });
+
   it('allows x- extensions on a rule', () => {
     expect(
       assertValidRuleset.bind(null, {
@@ -1205,6 +1268,25 @@ describe('JS Ruleset Validation', () => {
 
 // we only check the most notable differences here, since the rest of the validation process is common to both JS and JSON
 describe('JSON Ruleset Validation', () => {
+  it('rejects parsers, since they can only be defined in JS rulesets', () => {
+    expect(
+      assertValidRuleset.bind(
+        null,
+        {
+          rules: {},
+          parsers: [{ parser: 'graphql', extensions: ['.graphql'] }],
+        },
+        'json',
+      ),
+    ).toThrowAggregateError(
+      new AggregateError([
+        new RulesetValidationError('invalid-parser-definition', 'parsers can only be defined in JS rulesets', [
+          'parsers',
+        ]),
+      ]),
+    );
+  });
+
   it('recognizes valid array-ish extends syntax', () => {
     expect(
       assertValidRuleset.bind(

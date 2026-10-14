@@ -49,6 +49,14 @@ export function createValidator(format: 'js' | 'json'): ValidateFunction {
         case 'format':
           cxt.fail(_`typeof ${data} !== "function"`);
           break;
+        case 'callable':
+          cxt.fail(_`typeof ${data} !== "function"`);
+          break;
+        case 'parser':
+          cxt.fail(
+            _`${data} === null || typeof ${data} !== "object" || typeof ${data}.parse !== "function" || typeof ${data}.getLocationForJsonPath !== "function" || typeof ${data}.trapAccess !== "function"`,
+          );
+          break;
         case 'ruleset-function': {
           const fn = cxt.gen.const(
             'spectralFunction',

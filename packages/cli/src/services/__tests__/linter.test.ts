@@ -89,6 +89,30 @@ describe('Linter service', () => {
     ]);
   });
 
+  it('parses documents with the parsers declared in the ruleset', async () => {
+    const results = await run('lint -r ./custom-parser/ruleset.js ./custom-parser/config.kv');
+
+    expect(results).toEqual([
+      {
+        code: 'defined-port',
+        message: '"port" property must be truthy',
+        path: ['port'],
+        range: {
+          end: {
+            character: 5,
+            line: 1,
+          },
+          start: {
+            character: 0,
+            line: 1,
+          },
+        },
+        severity: DiagnosticSeverity.Warning,
+        source: join(__dirname, './__fixtures__/custom-parser/config.kv'),
+      },
+    ]);
+  });
+
   it('demands some ruleset to be present', () => {
     (process.cwd as jest.Mock).mockReturnValue(join(__dirname, '__fixtures__/resolver'));
     return expect(run(`lint stoplight-info-document.json`)).rejects.toThrow(

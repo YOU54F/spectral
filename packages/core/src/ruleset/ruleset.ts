@@ -1,6 +1,7 @@
 import { dirname, relative } from '@stoplight/path';
 import { isPlainObject, extractPointerFromRef, extractSourceFromRef } from '@stoplight/json';
 import { DiagnosticSeverity } from '@stoplight/types';
+import { ParserRegistry } from '@stoplight/spectral-parsers';
 import { minimatch } from './utils/minimatch';
 import { Rule, StringifiedRule } from './rule';
 import type {
@@ -73,6 +74,8 @@ export class Ruleset {
 
   protected readonly extends: Ruleset[] | null;
   public readonly formats = new Formats();
+  // parsers from extended rulesets come first, so the ruleset's own parsers take precedence
+  public readonly parsers: ParserRegistry;
   public readonly overrides: RulesetOverridesDefinition | null;
   public readonly aliases: RulesetAliasesDefinition | null;
   public readonly hasComplexAliases: boolean;
@@ -196,6 +199,11 @@ export class Ruleset {
         }
       }
     }
+
+    this.parsers = new ParserRegistry([
+      ...(this.extends ?? []).flatMap(({ parsers }) => [...parsers]),
+      ...(this.definition.parsers ?? []),
+    ]);
 
     this.rules = this.#getRules();
   }
