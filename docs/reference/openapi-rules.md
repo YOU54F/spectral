@@ -74,7 +74,6 @@ TheBadModel:
         - 2
 ```
 
-
 ### object-with-properties-requires-type-object
 
 Schemas that define `properties` must also declare `type: object`. Without it, JSON Schema validation does not restrict instances to objects, so strings and other primitives can pass unexpectedly.
