@@ -346,7 +346,7 @@ testRule('oas3-operation-security-defined', [
         },
       }),
       Parsers.Json,
-      sharedSchemesDocument.source,
+      sharedSchemesDocument.source ?? void 0,
     ),
     errors: [],
     mocks: {
@@ -355,4 +355,33 @@ testRule('oas3-operation-security-defined', [
       },
     },
   })),
+
+  {
+    name: 'oas3.1: bearer http scopes on operation without scheme-level scopes',
+    document: {
+      openapi: '3.1.0',
+      info: { title: 'test', version: '1.0.0' },
+      paths: {
+        '/users': {
+          get: {
+            security: [
+              {
+                bearerAuth: ['read:users', 'public'],
+              },
+            ],
+          },
+        },
+      },
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'jwt',
+          },
+        },
+      },
+    },
+    errors: [],
+  },
 ]);
