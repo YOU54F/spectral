@@ -380,4 +380,41 @@ describe('arazzoDocumentSchema', () => {
   ])('should fail for an invalid Criterion Object %j', criterion => {
     expect(runSchema(docWithCriterion(criterion)).length).toBeGreaterThan(0);
   });
+
+  const docWithFailureAction = (action: Record<string, unknown>) => ({
+    arazzo: '1.0.0',
+    info: { title: 'Failure Actions', version: '1.0.0' },
+    sourceDescriptions: [{ name: 'source1', url: 'https://example.com', type: 'arazzo' }],
+    workflows: [
+      {
+        workflowId: 'workflow1',
+        steps: [
+          { stepId: 'step1', operationId: 'operation1', onFailure: [action] },
+          { stepId: 'step2', operationId: 'operation2' },
+        ],
+      },
+    ],
+    components: { failureActions: { reusable: action } },
+  });
+
+  test.each([
+    // without stepId/workflowId the current step is retried
+    [{ name: 'retryCurrent', type: 'retry' }],
+    [{ name: 'retryCurrent', type: 'retry', retryAfter: 1, retryLimit: 3 }],
+    [{ name: 'retryCurrent', type: 'retry', retryLimit: 3 }],
+    [{ name: 'retryAfterStep', type: 'retry', stepId: 'step2', retryAfter: 1 }],
+    [{ name: 'retryAfterWorkflow', type: 'retry', workflowId: 'workflow1' }],
+    [{ name: 'gotoStep', type: 'goto', stepId: 'step2' }],
+    [{ name: 'endAction', type: 'end' }],
+  ])('should pass for a valid Failure Action Object %j', action => {
+    expect(runSchema(docWithFailureAction(action))).toHaveLength(0);
+  });
+
+  test.each([
+    [{ name: 'gotoNothing', type: 'goto' }],
+    [{ name: 'retryNegative', type: 'retry', retryAfter: -1 }],
+    [{ name: 'endWithStep', type: 'end', stepId: 'step2' }],
+  ])('should fail for an invalid Failure Action Object %j', action => {
+    expect(runSchema(docWithFailureAction(action)).length).toBeGreaterThan(0);
+  });
 });
