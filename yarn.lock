@@ -3516,12 +3516,12 @@ __metadata:
     "@yao-pkg/pkg": 6.22.0
     chalk: 4.1.2
     es-aggregate-error: ^1.0.7
-    fast-glob: ~3.2.12
     hpagent: ~1.2.0
     lodash: ^4.18.1
     nock: ^13.5.4
     pony-cause: ^1.1.1
     stacktracey: ^2.1.8
+    tinyglobby: ^0.2.14
     tslib: ^2.8.1
     xml2js: ^0.5.0
     yargs: ~17.7.2
@@ -7853,32 +7853,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-glob@npm:^3.3.3":
-  version: 3.3.3
-  resolution: "fast-glob@npm:3.3.3"
-  dependencies:
-    "@nodelib/fs.stat": ^2.0.2
-    "@nodelib/fs.walk": ^1.2.3
-    glob-parent: ^5.1.2
-    merge2: ^1.3.0
-    micromatch: ^4.0.8
-  checksum: 0704d7b85c0305fd2cef37777337dfa26230fdd072dce9fb5c82a4b03156f3ffb8ed3e636033e65d45d2a5805a4e475825369a27404c0307f2db0c8eb3366fbd
-  languageName: node
-  linkType: hard
-
-"fast-glob@npm:~3.2.12":
-  version: 3.2.12
-  resolution: "fast-glob@npm:3.2.12"
-  dependencies:
-    "@nodelib/fs.stat": ^2.0.2
-    "@nodelib/fs.walk": ^1.2.3
-    glob-parent: ^5.1.2
-    merge2: ^1.3.0
-    micromatch: ^4.0.4
-  checksum: 0b1990f6ce831c7e28c4d505edcdaad8e27e88ab9fa65eedadb730438cfc7cde4910d6c975d6b7b8dc8a73da4773702ebcfcd6e3518e73938bb1383badfe01c2
-  languageName: node
-  linkType: hard
-
 "fast-json-stable-stringify@npm:2.x":
   version: 2.0.0
   resolution: "fast-json-stable-stringify@npm:2.0.0"
@@ -11271,7 +11245,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"micromatch@npm:^4.0.0, micromatch@npm:^4.0.2, micromatch@npm:^4.0.4, micromatch@npm:^4.0.8":
+"micromatch@npm:^4.0.0, micromatch@npm:^4.0.2, micromatch@npm:^4.0.4":
   version: 4.0.8
   resolution: "micromatch@npm:4.0.8"
   dependencies:
@@ -13653,7 +13627,6 @@ __metadata:
     eslint-plugin-import-x: ^4.0.0
     eslint-plugin-prettier: ^5.0.0
     expect: ^27.5.1
-    fast-glob: ^3.3.3
     fetch-mock: ^12.6.0
     file-entry-cache: ^6.0.1
     globals: ^16.0.0
@@ -13672,6 +13645,7 @@ __metadata:
     patch-package: ^8.0.0
     prettier: ^3.0.0
     semantic-release: ^25.0.3
+    tinyglobby: ^0.2.14
     ts-jest: ^29.2.5
     ts-node: ^10.8.2
     typescript: 4.9.5
