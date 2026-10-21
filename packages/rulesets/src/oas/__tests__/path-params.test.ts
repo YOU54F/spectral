@@ -3,6 +3,46 @@ import testRule from './__helpers__/tester';
 
 testRule('path-params', [
   {
+    name: 'No error if path parameter name contains a dot (#2546)',
+    document: {
+      openapi: '3.0.3',
+      paths: {
+        '/pets/{pet.id}': {
+          get: {
+            parameters: [
+              {
+                name: 'pet.id',
+                in: 'path',
+                required: true,
+              },
+            ],
+          },
+        },
+      },
+    },
+    errors: [],
+  },
+
+  {
+    name: 'Error if path parameter name containing a dot is not defined (#2546)',
+    document: {
+      openapi: '3.0.3',
+      paths: {
+        '/pets/{pet.id}': {
+          get: {},
+        },
+      },
+    },
+    errors: [
+      {
+        message: 'Operation must define parameter "{pet.id}" as expected by path "/pets/{pet.id}".',
+        path: ['paths', '/pets/{pet.id}', 'get'],
+        severity: DiagnosticSeverity.Error,
+      },
+    ],
+  },
+
+  {
     name: 'No error if templated path is not used',
     document: {
       openapi: '3.0.3',
