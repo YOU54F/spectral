@@ -1,8 +1,9 @@
-import type { RulesetFunctionContext } from '@stoplight/spectral-core';
+import type { IFunctionResult, RulesetFunctionContext } from '@stoplight/spectral-core';
 import arazzoDocumentSchema from '../arazzoDocumentSchema';
 import { arazzo1_0 } from '@stoplight/spectral-formats';
 
-function runSchema(target: unknown, context?: Partial<RulesetFunctionContext>) {
+// arazzoDocumentSchema is synchronous and returns an array for the arazzo formats used here
+function runSchema(target: unknown, context?: Partial<RulesetFunctionContext>): IFunctionResult[] {
   return arazzoDocumentSchema(target, null, {
     path: [],
     documentInventory: {},
@@ -15,7 +16,7 @@ function runSchema(target: unknown, context?: Partial<RulesetFunctionContext>) {
       data: target,
     },
     ...context,
-  } as RulesetFunctionContext);
+  } as RulesetFunctionContext) as IFunctionResult[];
 }
 
 describe('arazzoDocumentSchema', () => {
