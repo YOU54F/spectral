@@ -2,9 +2,10 @@
 #
 # Local-only image: Spectral built from this branch's source, rather than installed from npm like ./Dockerfile.
 # Published to the local Gitea container registry for the Petstore Inc. demo:
-#   docker build -f Dockerfile.local --secret id=ca,src="$HOME/.zscaler-ca-bundle.pem" -t spectral-local:petstore-inc .
+#   docker build -f Dockerfile.local -t spectral-local:petstore-inc .
+#   docker build -f Dockerfile.local --secret id=ca,src=/path/to/ca-bundle.pem -t spectral-local:petstore-inc .
 #
-# Optional build secret "ca": a full PEM bundle (public roots + a TLS-intercepting proxy root such as Zscaler),
+# Optional build secret "ca": a full PEM bundle (public roots + a TLS-intercepting proxy root),
 # mounted only while yarn talks to the registry and never stored in a layer.
 # Dependency lifecycle scripts are never run (YARN_ENABLE_SCRIPTS=false).
 
