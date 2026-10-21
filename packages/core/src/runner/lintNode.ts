@@ -78,8 +78,8 @@ function processTargetResults(
       field === '@key' && result.path === void 0
         ? path[path.length - 1]
         : path.length === 0
-        ? document.data
-        : get(document.data, path);
+          ? document.data
+          : get(document.data, path);
 
     const vars: MessageVars = {
       property:
