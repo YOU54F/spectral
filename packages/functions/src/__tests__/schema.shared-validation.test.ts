@@ -290,7 +290,7 @@ describe('schema function / nestedResultCache option', () => {
     };
 
     const assign = createAjvInstancesWithNestedCache();
-    const vf = assign(recursiveSchema, 'auto', true);
+    const vf = assign(recursiveSchema, 'auto', { allErrors: true });
 
     const refs =
       (vf as unknown as { schemaEnv?: { refs?: Record<string, { validate?: unknown }> } }).schemaEnv?.refs ?? {};
@@ -322,7 +322,7 @@ describe('schema function / nestedResultCache option', () => {
   // params of two use-sites in the same call must not share the same object reference.
   it('two use-sites in the same call have independent mutable params', () => {
     const assign = createAjvInstancesWithNestedCache();
-    const vf = assign(RECURSIVE_SCHEMA, 'auto', true);
+    const vf = assign(RECURSIVE_SCHEMA, 'auto', { allErrors: true });
 
     const refs =
       (vf as unknown as { schemaEnv?: { refs?: Record<string, { validate?: unknown }> } }).schemaEnv?.refs ?? {};
@@ -372,9 +372,9 @@ describe('schema function / nestedResultCache option', () => {
       properties: { y: { $ref: 'https://test.com/shared-node' } },
     };
 
-    assign(nodeSchema, 'auto', true);
-    const wrappedA = assign(schemaA, 'auto', true);
-    const wrappedB = assign(schemaB, 'auto', true);
+    assign(nodeSchema, 'auto', { allErrors: true });
+    const wrappedA = assign(schemaA, 'auto', { allErrors: true });
+    const wrappedB = assign(schemaB, 'auto', { allErrors: true });
 
     type WithEnv = { schemaEnv?: { refs?: Record<string, unknown> } };
     const refsA = (wrappedA as unknown as WithEnv).schemaEnv?.refs ?? {};
