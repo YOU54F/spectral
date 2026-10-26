@@ -1,8 +1,9 @@
-import type { RulesetFunctionContext } from '@stoplight/spectral-core';
+import type { IFunctionResult, RulesetFunctionContext } from '@stoplight/spectral-core';
 import arazzoDocumentSchema from '../arazzoDocumentSchema';
 import { arazzo1_0 } from '@stoplight/spectral-formats';
 
-function runSchema(target: unknown, context?: Partial<RulesetFunctionContext>) {
+// arazzoDocumentSchema is synchronous and returns an array for the arazzo formats used here
+function runSchema(target: unknown, context?: Partial<RulesetFunctionContext>): IFunctionResult[] {
   return arazzoDocumentSchema(target, null, {
     path: [],
     documentInventory: {},
@@ -15,7 +16,7 @@ function runSchema(target: unknown, context?: Partial<RulesetFunctionContext>) {
       data: target,
     },
     ...context,
-  } as RulesetFunctionContext);
+  } as RulesetFunctionContext) as IFunctionResult[];
 }
 
 describe('arazzoDocumentSchema', () => {
@@ -280,5 +281,48 @@ describe('arazzoDocumentSchema', () => {
     expect(results[0].message).toContain(
       'property must be equal to one of the allowed values: "goto". Did you mean "goto"?',
     );
+  });
+
+  const docWithCriterion = (criterion: Record<string, unknown>) => ({
+    arazzo: '1.0.0',
+    info: { title: 'Criterion', version: '1.0.0' },
+    sourceDescriptions: [{ name: 'source1', url: 'https://example.com', type: 'arazzo' }],
+    workflows: [
+      {
+        workflowId: 'workflow1',
+        steps: [{ stepId: 'step1', operationId: 'operation1', successCriteria: [criterion] }],
+      },
+    ],
+  });
+
+  test.each([
+    { condition: '$statusCode == 200' },
+    { condition: '$statusCode == 200', type: 'simple', context: '$response.body' },
+    { condition: '^ok$', type: 'regex', context: '$response.body' },
+    { condition: '$.pets[0]', type: 'jsonpath', context: '$response.body' },
+    {
+      condition: '$.pets[0]',
+      context: '$response.body',
+      type: { type: 'jsonpath', version: 'draft-goessner-dispatch-jsonpath-00' },
+    },
+    { condition: '/pets', context: '$response.body', type: { type: 'xpath', version: 'xpath-30' } },
+  ])('should pass for a valid Criterion Object %j', criterion => {
+    expect(runSchema(docWithCriterion(criterion))).toHaveLength(0);
+  });
+
+  test.each([
+    // version must be nested in a Criterion Expression Type Object
+    {
+      condition: '$.pets',
+      context: '$response.body',
+      type: 'jsonpath',
+      version: 'draft-goessner-dispatch-jsonpath-00',
+    },
+    { condition: '$.pets', context: '$response.body', type: 'unknown' },
+    { condition: '$.pets', context: '$response.body', type: { type: 'jsonpath', version: 'xpath-30' } },
+    { condition: '$.pets', context: '$response.body', type: { type: 'regex', version: '1' } },
+    { condition: '$.pets', context: '$response.body', type: { type: 'jsonpath' } },
+  ])('should fail for an invalid Criterion Object %j', criterion => {
+    expect(runSchema(docWithCriterion(criterion)).length).toBeGreaterThan(0);
   });
 });
