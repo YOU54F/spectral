@@ -53,7 +53,8 @@ describe('Spectral', () => {
       },
       {
         code: 'invalid-ref',
-        message: 'EISDIR: illegal operation on a directory, read',
+        // Node >= 26 appends the offending path to the EISDIR message
+        message: expect.stringMatching(/^EISDIR: illegal operation on a directory, read\b/),
         path: ['empty', '$ref'],
         range: {
           end: {
