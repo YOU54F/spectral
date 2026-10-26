@@ -612,4 +612,49 @@ describe('arazzoStepParametersValidation', () => {
       path: ['workflows', 0, 'steps', 0, 'parameters', 0],
     });
   });
+
+  describe('nested $inputs expressions (#2754)', () => {
+    const nestedInputsSpec = (value: string): ArazzoSpecification => ({
+      workflows: [
+        {
+          workflowId: 'workflow1',
+          inputs: {
+            type: 'object',
+            properties: {
+              searchCriteria: {
+                type: 'object',
+                properties: { breed: { type: 'string' } },
+              },
+              adopterDetails: {
+                type: 'object',
+                properties: {
+                  contactInformation: { type: 'object', properties: { email: { type: 'string' } } },
+                },
+              },
+              tags: { type: 'array', items: { type: 'string' } },
+            },
+          },
+          steps: [{ stepId: 'step1', parameters: [{ name: 'id', in: 'path', value }] }],
+        },
+      ],
+    });
+
+    test.each([
+      '$inputs.searchCriteria.breed',
+      '$inputs.adopterDetails.contactInformation.email',
+      '$inputs.tags[0]',
+      '$inputs.searchCriteria#/breed',
+    ])('should not report errors for %s', value => {
+      expect(runRule(nestedInputsSpec(value))).toHaveLength(0);
+    });
+
+    test.each(['$inputs.unknown.breed', '$inputs.', '$inputs.searchCriteria..', '$inputs.search Criteria'])(
+      'should report an error for %s',
+      value => {
+        const results = runRule(nestedInputsSpec(value));
+        expect(results).toHaveLength(1);
+        expect(results[0].message).toBe(`Invalid runtime expression: "${value}" for parameter.`);
+      },
+    );
+  });
 });
