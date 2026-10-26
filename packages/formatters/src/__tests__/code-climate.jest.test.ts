@@ -48,12 +48,12 @@ describe('Code climate formatter', () => {
           path: '__tests__/fixtures/petstore.oas2.yaml',
           positions: {
             begin: {
-              line: 60,
-              column: 8,
+              line: 61,
+              column: 9,
             },
             end: {
-              line: 71,
-              column: 60,
+              line: 72,
+              column: 61,
             },
           },
         },
@@ -63,12 +63,12 @@ describe('Code climate formatter', () => {
           path: '__tests__/fixtures/petstore.oas2.yaml',
           positions: {
             begin: {
-              line: 60,
-              column: 8,
+              line: 61,
+              column: 9,
             },
             end: {
-              line: 71,
-              column: 60,
+              line: 72,
+              column: 61,
             },
           },
         },
