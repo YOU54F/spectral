@@ -660,18 +660,6 @@
               }
             ]
           }
-        },
-        {
-          "if": {
-            "properties": {
-              "type": {
-                "const": "retry"
-              }
-            }
-          },
-          "then": {
-            "required": ["retryAfter"]
-          }
         }
       ],
       "dependentSchemas": {
