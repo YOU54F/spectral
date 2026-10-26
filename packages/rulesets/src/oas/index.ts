@@ -70,10 +70,11 @@ const ruleset = {
           formats: [oas3_1, oas3_2],
           given: [
             // Still check for type: 'array'
-            '$..[?(@ && @.type=="array")]',
+            // JSON Schema 2020-12 tuples may use prefixItems instead of items (#2646)
+            '$..[?(@ && @.type=="array" && !@.prefixItems)]',
 
             // also check for type: ['array', ...]
-            '$..[?(@ && @.type && @.type.constructor.name === "Array" && @.type.includes("array"))]',
+            '$..[?(@ && @.type && @.type.constructor.name === "Array" && @.type.includes("array") && !@.prefixItems)]',
           ],
         },
       ],
